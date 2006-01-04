@@ -1,0 +1,35 @@
+Name: random
+Title:Interpretation of random programs
+Author:Christine Paulin 
+Institution: LRI, Université Paris Sud
+
+Description: This contribution is a modelisation of random programs 
+as measures in Coq. It has been designed for the 
+AVERROES project (http://www-verimag.imag.fr/AVERROES/). 
+
+It contains the following elements 
+  - an axiomatisation of the interval [0,1] and derived properties
+(files Ubase.v and Uprop.v);
+  - a definition of measures on a type A as functions of type
+(A->[0,1])->[0,1] enjoying special stability properties (files
+Monads.v and Probas.v); proofs that these constructions have a
+monadic structure;
+  - an interpretation of programs of type A as measure, in particular
+a fixpoint construction; the definition of an axiomatic semantic for
+deriving judgements such as ``the probability of an expression e to
+evaluate to a result satisfying property q is greater than p'' (file
+Prog.v);
+  - Proof of probabilistic termination of a linear random walk (file
+Iterflip.v);
+  - Proof of a program implementing a bernouilli distribution
+(Proba(bernouilli()=true)=p) using a coin flip (file Bernouilli.v);
+  - Proof of estimation of the combination of two random execution
+(file Choice.v)
+  - Definition of a measure on traces from a mesure on transitions
+steps (file Nelist.v, Transitions.v) 
+
+The document random.pdf contains a short introduction to the library
+associated to the Gallina source code of the library. 
+
+Keywords: randomized algorithms, monads
+Version: 8.1

@@ -1,0 +1,11 @@
+-I $(COQ)/contrib/Orsay/FSets
+Ubase.v
+Uprop.v
+Monads.v 
+Probas.v
+Prog.v
+IterFlip.v
+Choice.v
+nelist.v
+Bernouilli.v
+Transitions.v
