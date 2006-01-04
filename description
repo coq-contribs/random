@@ -14,7 +14,7 @@ It contains the following elements
 (A->[0,1])->[0,1] enjoying special stability properties (files
 Monads.v and Probas.v); proofs that these constructions have a
 monadic structure;
-  - an interpretation of programs of type A as measure, in particular
+  - an interpretation of programs of type A as measures, in particular
 a fixpoint construction; the definition of an axiomatic semantic for
 deriving judgements such as ``the probability of an expression e to
 evaluate to a result satisfying property q is greater than p'' (file
@@ -23,7 +23,7 @@ Prog.v);
 Iterflip.v);
   - Proof of a program implementing a bernouilli distribution
 (Proba(bernouilli()=true)=p) using a coin flip (file Bernouilli.v);
-  - Proof of estimation of the combination of two random execution
+  - Proof of estimation of the combination of two random executions
 (file Choice.v)
   - Definition of a measure on traces from a mesure on transitions
 steps (file Nelist.v, Transitions.v) 
