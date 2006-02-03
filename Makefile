@@ -71,7 +71,8 @@ COQLIBS=-I .
 #                                 #
 ###################################
 
-VFILES=Ubase.v\
+VFILES=Prelude.v\
+  Ubase.v\
   Uprop.v\
   Monads.v\
   Probas.v\
@@ -87,7 +88,8 @@ GFILES=$(VFILES:.v=.g)
 HTMLFILES=$(VFILES:.v=.html)
 GHTMLFILES=$(VFILES:.v=.g.html)
 
-all: Ubase.vo\
+all: Prelude.vo\
+  Ubase.vo\
   Uprop.vo\
   Monads.vo\
   Probas.vo\

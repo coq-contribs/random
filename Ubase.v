@@ -1,30 +1,8 @@
 (** * Ubase.v: Specification of $U$, interval $[0,1]$ *)
 
 Require Export Setoid.
+Require Export Prelude.
 Set Implicit Arguments.
-
-(** ** Preliminaries *)
-(** *** Definition of iterator [comp]
-   [comp f u n x] is defined as $(f~(u~(n-1)).. (f (u~ 0)~x))$ *)
-
-Fixpoint comp (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A) (n:nat) {struct n}: A := 
-   match n with O => x| (S p) => f (u p) (comp f x u p) end.
-      
-Lemma comp0 : forall (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A), comp f x u 0 = x.
-trivial.
-Save.
-
-Lemma compS : forall (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A) (n:nat),
-              comp f x u (S n) = f (u n) (comp f x u n).
-trivial.
-Save.
-
-(** *** Monotonicity of sequences for an arbitrary relation *)
-Definition mon_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A) 
-  :=  forall n m, (n <= m) -> (le (f n) (f m)).
-
-Definition decr_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A) 
-  :=  forall n m, (n <= m) -> (le (f m) (f n)).
 
 (** ** Specification of $U$ *)
 (** - Constants : $0$ and $1$
@@ -90,15 +68,15 @@ Hypothesis Ule_trans : forall x y z:U, (x <= y) -> (y <= z) -> (x <= z).
 Hypothesis Ule_antisym : forall x y:U, (x <= y) -> (y <= x) -> (x == y).
 
 (** Totality of the order *)
+Hypothesis Ule_class : forall x y : U, class (x <= y).
 
-Hypothesis Ueq_double_neg : forall x y : U, ~ ~x == y -> x == y.
-
-Hypothesis Ule_total : forall x y : U, (x <= y) \/ (y <= x).
+Hypothesis Ule_total : forall x y : U, orc (x<=y) (y<=x).
+Implicit Arguments Ule_total [].
 
 (** The relation $x\leq y$ is compatible with operators *)
-Hypothesis Uplus_le_compat_right : forall x y z:U, x <= y -> (x + z) <= (y + z).
+Hypothesis Uplus_le_compat_left : forall x y z:U, x <= y -> (x + z) <= (y + z).
 
-Hypothesis Umult_le_compat_right : forall x y z:U, x <= y -> (x * z) <= (y * z).
+Hypothesis Umult_le_compat_left : forall x y z:U, x <= y -> (x * z) <= (y * z).
 
 Hypothesis Uinv_le_compat : forall x y:U, x <= y -> [1-] y <= [1-] x.
 

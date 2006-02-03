@@ -66,7 +66,7 @@ setoid_replace (mu p1 (fun _ : A => mu p2 Q))
   with (mu p2 Q); auto.
 apply Ule_trans with 
    (k1 * [1-] (mu p2 Q) + (mu p2 Q)); auto.
-apply Uplus_le_compat_right.
+apply Uplus_le_compat_left.
 apply Ule_trans with 
 (mu p1 (fun x : A => (Q x) * mu p2 (finv Q))).
 apply Ule_trans with 

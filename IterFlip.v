@@ -82,9 +82,9 @@ setoid_rewrite flip_ctrue.
 setoid_rewrite flip_cfalse.
 unfold q1 at 2.
 setoid_rewrite (Umult_one_left [1/2]).
-apply Uplus_le_compat_right.
+apply Uplus_le_compat_left.
 apply Ule_trans with (p i * [1/2]); auto.
-apply Umult_le_compat_right; auto.
+apply Umult_le_compat_left; auto.
 apply (H (Zsucc x)%Z).
 Save.
 

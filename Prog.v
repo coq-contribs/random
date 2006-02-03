@@ -148,6 +148,19 @@ apply Ule_trans with (mu e q); auto.
 apply Ule_trans with (mu e' q); auto.
 apply (mu_monotonic e'); auto.
 Save.
+
+Lemma ok_mult : forall (A:Type)(k p:U)(e:distr A)(f : A -> U), ok p e f -> ok (k*p) e (fmult k f).
+unfold ok; intros A k p e f oka.
+rewrite (mu_stable_mult e k f).
+apply Umult_le_compat_right; trivial.
+Save.
+
+Lemma ok_inv :   forall (A:Type)(p:U)(e:distr A)(f : A -> U), ok p e f -> (mu e (finv f)) <= [1-]p.
+unfold ok; intros A p e f oka.
+apply Ule_trans with ([1-](mu e f)); auto.
+apply mu_stable_inv.
+Save.
+
 (** ** Basic rules *)
 (** *** Rule for application 
  $\bfrac{\ok{r}{a}{p}~~~\forall x, \ok{p(x)}{f(x)}{q}}{\ok{r}{f(a)}{q}}$*)
@@ -207,8 +220,8 @@ Lemma ifrule :
 unfold ok; intros.
 setoid_rewrite (Mif_eq b f1 f2 q).
 apply Uplus_le_compat.
-apply Umult_le_compat_right; auto.
-apply Umult_le_compat_right; auto.
+apply Umult_le_compat_left; auto.
+apply Umult_le_compat_left; auto.
 Save.
 
 (** *** Properties of [Flip] *)

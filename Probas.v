@@ -13,7 +13,7 @@ Import MP.UP.
 (** ** Definition of distribution
 Distributions are measure functions such that
     - $\mu (1-f) \leq 1-\mu(f)$
-    - $\mu(f+g)=\mu(f)+\mu(g)$
+    - $f \leq 1 -g \Ra \mu(f+g)=\mu(f)+\mu(g)$
     - $\mu(k\times f) = k \times \mu(f)$
     - $f\leq g \Ra \mu(f)\leq\mu(g)$
 *)
@@ -88,6 +88,61 @@ apply Ueq_trans with (c * mu m f); auto.
 exact (mu_stable_mult m c f).
 Save.
 
+Lemma mu_stable_minus : forall (A:Type) (m:distr A)(f g : A -> U),
+ fle g f -> mu m (fun x => f x - g x) == mu m f - mu m g.
+intros.
+assert (mu m g <= mu m f).
+apply (mu_monotonic m); auto.
+assert (forall x, f x - g x <= [1-](g x)).
+intros; unfold Uminus; auto.
+setoid_replace (mu m f) with (mu m (fun x : A => f x - g x) + mu m g); auto.
+apply Ueq_sym; apply Uplus_minus_simpl_right.
+apply Ule_trans with ([1-](mu m (fun x => [1-] g x))); auto.
+apply Uinv_le_perm_right.
+apply (mu_stable_inv m g); auto.
+apply Uinv_le_compat.
+apply (mu_monotonic m); red; intros; auto.
+rewrite <- (mu_stable_plus m (f:=fun x : A => f x - g x)  (g:=g)).
+repeat red; intros; unfold finv; auto.
+apply (mu_stable_eq m); repeat red; unfold fplus; intros; auto.
+Save.
+
+Lemma mu_inv_minus : 
+forall (A:Type) (m:distr A)(f: A -> U), mu m (finv f) == mu m (f_one A) - mu m f.
+intros; apply Ueq_trans with (mu m (fun x => f_one A x - f x)).
+apply (mu_stable_eq m); repeat red; unfold finv,f_one; intros; auto.
+apply mu_stable_minus; auto.
+Save.
+
+Lemma mu_inv_minus_inv : forall (A:Type) (m:distr A)(f: A -> U), 
+     mu m (finv f) + [1-](mu m (f_one A)) == [1-](mu m f).
+intros; apply Uminus_eq_perm_right.
+apply Uinv_le_compat.
+apply (mu_monotonic m); unfold f_one; auto.
+unfold Uminus; Usimpl.
+rewrite mu_inv_minus; repeat Usimpl.
+unfold Uminus.
+apply Uinv_eq_compat; auto.
+Save.
+
+Lemma mu_le_Uesp : forall (A:Type) (m:distr A)(f g : A -> U),
+ fle (finv f) g -> mu m f & mu m g <= mu m (fun x => f x & g x).
+intros; unfold Uesp.
+apply Ule_trans with (mu m (finv (fplus (finv f) (finv g)))); auto.
+rewrite mu_inv_minus.
+rewrite (mu_stable_plus m (f:=finv f)); auto.
+repeat red; unfold finv; intros; repeat Usimpl; auto.
+apply (H x).
+apply Ule_trans with (mu m f - [1-] mu m g) ; repeat Usimpl; auto.
+rewrite mu_inv_minus.
+apply Ule_trans with (mu m f - mu m (finv g)) ; repeat Usimpl.
+apply Uminus_le_compat_right.
+apply mu_stable_inv.
+rewrite <- Uminus_assoc_left.
+rewrite Uminus_assoc_right; repeat Usimpl; auto.
+apply (mu_monotonic m); auto.
+Save.
+
 (** ** Monadic operators for distributions *)
 Definition Munit : forall A:Type, A -> distr A.
 intros A x.
@@ -117,13 +172,35 @@ Definition le_distr (A:Type) (m1 m2:distr A) := forall f, (mu m1 f) <= (mu m2 f)
 
 Definition eq_distr (A:Type) (m1 m2:distr A) := forall f, (mu m1 f) == (mu m2 f).
 
-Lemma eq_distr_antisym : forall (A:Type) (m1 m2:distr A),
+Lemma le_distr_antisym : forall (A:Type) (m1 m2:distr A),
   (le_distr m1 m2) -> (le_distr m2 m1) -> eq_distr m1 m2.
 red; intros; apply Ule_antisym; auto.
 Save.
 
 Lemma le_distr_refl : forall (A:Type) (m :distr A), le_distr m m.
 unfold le_distr; auto.
+Save.
+
+Lemma eq_distr_sym : forall A (m1 m2:distr A), eq_distr m1 m2 ->eq_distr m2 m1.
+unfold eq_distr; auto.
+Save.
+
+Lemma eq_distr_refl : forall A (m:distr A), eq_distr m m.
+unfold eq_distr; auto.
+Save.
+
+Lemma eq_distr_trans : forall A (m1 m2 m3:distr A), 
+      eq_distr m1 m2 -> eq_distr m2 m3->eq_distr m1 m3.
+unfold eq_distr; intros.
+apply Ueq_trans with (mu m2 f); auto.
+Save.
+
+Hint Resolve eq_distr_refl.
+Hint Immediate eq_distr_sym.
+
+Lemma distr_setoid : forall (A:Type), (Setoid_Theory  (distr A) (eq_distr (A:=A))).
+intros; constructor; auto.
+exact (eq_distr_trans (A:=A)).
 Save.
 
 Lemma le_distr_trans : forall (A:Type) (m1 m2 m3:distr A),
@@ -134,6 +211,20 @@ Save.
 
 Hint Resolve le_distr_refl.
 Hint Unfold le_distr.
+
+Add Setoid distr eq_distr distr_setoid as Distr_Setoid. 
+
+Lemma Munit_compat : forall A (x y : A), x=y -> (eq_distr (Munit x) (Munit y)).
+intros; subst; auto.
+Save.
+
+Lemma Mlet_compat : forall (A B : Type) (m1 m2:distr A) (M1 M2 : A-> distr B), 
+  (eq_distr m1 m2) -> (forall x, eq_distr (M1 x) (M2 x)) -> 
+  (eq_distr (Mlet m1 M1) (Mlet m2 M2)).
+unfold eq_distr,Mlet,star; simpl; intros.
+apply Ueq_trans with (mu m2 (fun x : A => mu (M1 x) f)); auto.
+apply mu_stable_eq; red; auto.
+Save.
 
 Lemma le_distr_gen : forall (A:Type) (m1 m2:distr A),
   (le_distr m1 m2) -> forall f g,  (fle f g) -> (mu m1 f) <= (mu m2 g).
@@ -238,8 +329,8 @@ unfold flip, stable_plus, fplus; intros; auto.
 setoid_rewrite (Udistr_plus_left [1/2] (H true)).
 setoid_rewrite (Udistr_plus_left [1/2] (H false)).
 repeat norm_assoc_right.
-apply Uplus_eq_compat_left.
-repeat norm_assoc_left; apply Uplus_eq_compat_right; auto.
+apply Uplus_eq_compat_right.
+repeat norm_assoc_left; apply Uplus_eq_compat_left; auto.
 Save.
 
 Lemma flip_stable_mult : stable_mult flip.
@@ -298,7 +389,7 @@ Save.
 Hint Resolve Unth_eq.
 
 Lemma sigma_fnth_one : forall n, sigma (fnth n) (S n) == 1.
-intros; rewrite sigmaS.
+intros; rewrite sigma_S.
 unfold fnth at 1.
 rewrite (Unth_eq n); auto.
 Save.
@@ -312,7 +403,7 @@ Lemma sigma_fnth_sup : forall n m, (m > n) -> sigma (fnth n) m == sigma (fnth n)
 intros.
 assert ((S n) <= m)%nat; auto with arith.
 elim H0; intros; auto.
-rewrite sigmaS; auto.
+rewrite sigma_S; auto.
 setoid_rewrite H2.
 assert (m0 > n); auto with arith.
 setoid_rewrite (sigma_fnth_one n); auto.
@@ -386,6 +477,13 @@ apply random_stable_mult.
 apply random_monotonic.
 Defined.
 
-
+Lemma random_total : forall n : nat,  mu (Random n) (f_one nat) == 1.
+intros; simpl; unfold random.
+unfold f_one.
+apply Ueq_trans with  (sigma (fnth n) (S n)).
+apply sigma_eq_compat.
+intros; repeat Usimpl; auto.
+auto.
+Save.
 
 End Proba.
