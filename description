@@ -22,7 +22,8 @@ Prog.v);
   - Proof of probabilistic termination of a linear random walk (file
 Iterflip.v);
   - Proof of a program implementing a bernouilli distribution
-(Proba(bernouilli()=true)=p) using a coin flip (file Bernouilli.v);
+(Proba(bernouilli()=true)=p) using a coin flip and the derived binomial 
+law (Proba(binomial p n=k)=C(n,k)p^k(1-p)^{n-k}) (file Bernouilli.v);
   - Proof of estimation of the combination of two random executions
 (file Choice.v)
   - Definition of a measure on traces from a mesure on transitions
