@@ -1389,7 +1389,9 @@ Save.
 Lemma lub_cte : forall c:U, (lub (fun n => c)) == c.
 intro; apply Ueq_trans with (lub (fun n => c * 1)); auto.
 apply Ueq_trans with (c * (lub (fun n => 1))); auto.
-apply lub_eq_mult with (f:=fun (n:nat) => 1); auto.
+(* Become useless with pattern-unification
+apply lub_eq_mult with (f:=fun (n:nat) => 1); auto. 
+*)
 setoid_rewrite lub_un; auto.
 Save.
 
