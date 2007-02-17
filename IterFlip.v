@@ -1,19 +1,3 @@
-(* This program is free software; you can redistribute it and/or      *)
-(* modify it under the terms of the GNU Lesser General Public License *)
-(* as published by the Free Software Foundation; either version 2.1   *)
-(* of the License, or (at your option) any later version.             *)
-(*                                                                    *)
-(* This program is distributed in the hope that it will be useful,    *)
-(* but WITHOUT ANY WARRANTY; without even the implied warranty of     *)
-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      *)
-(* GNU General Public License for more details.                       *)
-(*                                                                    *)
-(* You should have received a copy of the GNU Lesser General Public   *)
-(* License along with this program; if not, write to the Free         *)
-(* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA *)
-(* 02110-1301 USA                                                     *)
-
-
 (** * IterFlip.v: An example of probabilistic termination *)
 
 Require Export Prog.
@@ -70,12 +54,13 @@ Hint Resolve p_le.
 
 Lemma lim_p_one : 1 <= lub p.
 apply Ule_lt_lim; intros.
-assert (exists n : nat, t <= [1-] ([1/]1+n)).
-assert (~([1-] t)==0).
+assert (exc (fun n : nat => t <= [1-] ([1/]1+n))).
+assert (~0==[1-] t).
 red; intro; apply H; auto.
 apply Ule_trans with ([1-] 0); auto.
-elim (archimedian H0); intros m H1; exists m; auto.
-elim H0; intros.
+apply (archimedian H0); auto; intros m H1.
+apply exc_intro with m; auto.
+apply H0; auto; intros.
 apply Ule_trans with (p x); auto.
 apply Ule_trans with ([1-] ([1/]1+x)); auto.
 Save.
@@ -83,7 +68,7 @@ Save.
 Hint Resolve lim_p_one.
 
 (** *** Proof of probabilistic termination  *)
-Definition q1 (z:Z) := 1.
+Definition q1 (z1 z2:Z) := 1.
 
 Lemma iterflip_term : okfun (fun k => 1) iterflip q1.
 unfold iterflip; intros.
@@ -92,7 +77,7 @@ apply fixrule with (p:= fun (x:Z) => p); auto; intros.
 red; simpl; intros.
 unfold Fiter.
 red.
-setoid_rewrite (Mif_eq Flip (f (Zsucc x)) (Munit x) q1); simpl.
+setoid_rewrite (Mif_eq Flip (f (Zsucc x)) (Munit x) (q1 x)); simpl.
 unfold unit; simpl.
 setoid_rewrite flip_ctrue.
 setoid_rewrite flip_cfalse.

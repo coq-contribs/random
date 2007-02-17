@@ -1,19 +1,3 @@
-(* This program is free software; you can redistribute it and/or      *)
-(* modify it under the terms of the GNU Lesser General Public License *)
-(* as published by the Free Software Foundation; either version 2.1   *)
-(* of the License, or (at your option) any later version.             *)
-(*                                                                    *)
-(* This program is distributed in the hope that it will be useful,    *)
-(* but WITHOUT ANY WARRANTY; without even the implied warranty of     *)
-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      *)
-(* GNU General Public License for more details.                       *)
-(*                                                                    *)
-(* You should have received a copy of the GNU Lesser General Public   *)
-(* License along with this program; if not, write to the Free         *)
-(* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA *)
-(* 02110-1301 USA                                                     *)
-
-
 (** * Uprop.v : Properties of operators on [[0,1]] *)
 Set Implicit Arguments.
 Require Export Ubase.
@@ -67,6 +51,8 @@ auto.
 Save.
 Hint Resolve Ule_refl.
 
+Add Relation  U Ule reflexivity proved by Ule_refl transitivity proved by Ule_trans as Ule_Relation.
+
 (** ** Properties of == derived from properties of $\le$ *)
 
 Lemma Ueq_trans : forall x y z:U, x == y -> y == z -> x == z.
@@ -111,19 +97,21 @@ Qed.
 
 Add Setoid U Ueq Usetoid as U_setoid.
 
-Add Morphism Uplus : Uplus_eq_compat.
+Add Morphism Uplus with signature Ueq ==> Ueq ==> Ueq as Uplus_eq_compat.
 intros x1 x2 eq1 x3 x4 eq2; apply Ueq_trans with (x1+x4); auto.
 Qed.
 
-Add Morphism Umult : Umult_eq_compat.
+Add Morphism Umult with signature Ueq ==> Ueq ==> Ueq as Umult_eq_compat.
 intros x1 x2 eq1 x3 x4 eq2; apply Ueq_trans with (x1 * x4); auto.
 Qed.
 
-Add Morphism Uinv : Uinv_eq_compat.
+Hint Immediate Umult_eq_compat Uplus_eq_compat.
+
+Add Morphism Uinv with signature Ueq ==> Ueq as Uinv_eq_compat.
 intros; apply Ule_antisym; auto.
 Qed.
 
-Add Morphism Ule : Ule_eq_compat_iff.
+Add Morphism Ule with signature Ueq ==> Ueq ==> iff as Ule_eq_compat_iff.
 intros x1 x2 eq1 x3 x4 eq2; split; intro Hle.
 apply Ule_trans with x1; auto.
 apply Ule_trans with x3; auto.
@@ -144,7 +132,7 @@ Infix "<" := Ult : U_scope.
 Hint Unfold Ult.
 
 
-Add Morphism Ult : Ult_eq_compat_iff.
+Add Morphism Ult with signature Ueq ==> Ueq ==> iff as Ult_eq_compat_iff.
 unfold Ult, not; intros x1 x2 eq1 x3 x4 eq2.
 generalize (Ule_eq_compat_iff eq2 eq1); intuition.
 Save.
@@ -308,6 +296,11 @@ Save.
 
 Hint Resolve Umult_le_compat_right.
 
+Add Morphism Umult with signature Ule ++> Ule ++> Ule as Umult_le_compat.
+intros x1 x2 H1 x3 x4 H2; apply Ule_trans with (x1 * x4); auto.
+Save.
+Hint Immediate Umult_le_compat.
+
 Lemma Umult_one_right : forall x:U, (x * 1) == x.
 intros; setoid_rewrite (Umult_sym x 1); auto.
 Save.
@@ -384,10 +377,25 @@ intros; apply Uplus_eq_simpl_right with y; auto.
 setoid_rewrite H0; auto.
 Save.
 
-Lemma Uinv_le_trans : forall x y z t, x <= [1-] y -> z<=x -> t<=y -> z<=[1-] t.
+Lemma Uinv_le_trans : forall x y z t, x <= [1-] y -> z<=x -> t<=y -> z<= [1-] t.
 intros; apply Ule_trans with x; auto.
 apply Ule_trans with ([1-] y); auto.
 Save.
+
+
+Lemma Uinv_plus_left_le : forall x y, [1-]y <= [1-](x+y) +x.
+intros; apply (Ule_total y ([1-]x)); auto; intros.
+rewrite Uinv_plus_left; auto.
+apply Ule_trans with x; auto.
+Save.
+
+Lemma Uinv_plus_right_le : forall x y, [1-]x <= [1-](x+y) +y.
+intros; apply (Ule_total y ([1-]x)); auto; intros.
+rewrite Uinv_plus_right; auto.
+apply Ule_trans with y; auto.
+Save.
+
+Hint Resolve Uinv_plus_left_le Uinv_plus_right_le.
 
 (** ** Disequality *)
 
@@ -725,7 +733,7 @@ induction n; simpl; intros; auto.
 apply Ule_trans with (x * (y^n)); auto.
 Save.
 
-Add Morphism Uexp : Uexp_eq_compat.
+Add Morphism Uexp with signature Ueq ==> eq ==> Ueq as Uexp_eq_compat.
 intros; apply Ule_antisym; apply Uexp_Ule_compat; auto.
 Save.
 
@@ -790,12 +798,16 @@ setoid_rewrite Uinv_one.
 setoid_rewrite (Uplus_zero_right ([1-] x)); auto.
 Save.
 
+Lemma Uesp_one_left : forall x : U, 1 & x  == x.
+intros; rewrite Uesp_sym; apply Uesp_one_right.
+Save.
+
 Lemma Uesp_zero : forall x y, x <= [1-] y -> x & y == 0.
 intros; unfold Uesp.
 setoid_rewrite <- Uinv_one; auto.
 Save.
 
-Hint Resolve Uesp_sym Uesp_one_right Uesp_zero.
+Hint Resolve Uesp_sym Uesp_one_right Uesp_one_left Uesp_zero.
 
 Lemma Uesp_zero_right : forall x : U, x & 0 == 0.
 auto.
@@ -807,7 +819,54 @@ Save.
 
 Hint Resolve Uesp_zero_right Uesp_zero_left.
 
-(** ** Definition and properties of $x - y $ *)
+Add Morphism Uesp with signature Ueq ==> Ueq ==> Ueq as  Uesp_eq_compat.
+unfold Uesp; intros.
+apply Uinv_eq_compat.
+rewrite H; rewrite H0; auto.
+Save.
+
+Lemma Uesp_le_compat : forall x y z t, x<=y -> z <=t -> x&z <= y&t.
+unfold Uesp; intros.
+apply Uinv_le_compat.
+apply Uplus_le_compat; auto.
+Save.
+
+Hint Immediate Uesp_le_compat Uesp_eq_compat.
+
+
+Lemma Uesp_le_left : forall x y, x & y <= x.
+unfold Uesp; intros.
+apply Uinv_le_perm_left; auto.
+Save.
+
+Lemma Uesp_le_right : forall x y, x & y <= y.
+unfold Uesp; intros.
+apply Uinv_le_perm_left; auto.
+Save.
+
+Hint Resolve Uesp_le_left Uesp_le_right.
+
+Lemma Uesp_plus_inv : forall x y, [1-] y <= x -> x == x & y + [1-] y.
+unfold Uesp; intros.
+rewrite Uinv_plus_right; auto.
+Save.
+Hint Resolve Uesp_plus_inv.
+
+Lemma Uesp_le_plus_inv : forall x y, x <= x & y + [1-] y.
+intros; apply (Ule_total ([1-]y) x); intros; auto.
+rewrite Uesp_zero; auto.
+rewrite Uplus_zero_left; auto.
+Save.
+Hint Resolve Uesp_le_plus_inv.
+
+Lemma Uplus_inv_le_esp : forall x y z, x <= y + ([1-] z) -> x & z <= y.
+intros; unfold Uesp.
+apply Uinv_le_perm_left.
+apply Ule_trans with ([1-](y+[1-]z) + [1-]z); auto.
+Save.
+Hint Immediate Uplus_inv_le_esp.
+
+(** ** Definition and properties of $x - y$ *)
 
 Definition Uminus (x y:U) := [1-] ([1-] x + y).
 
@@ -823,7 +882,13 @@ Save.
 
 Hint Resolve Uminus_le_compat_left Uminus_le_compat_right.
 
-Add Morphism Uminus : Uminus_eq_compat.
+Lemma Uminus_le_compat : forall x y z t, x <= y ->  t <= z -> x - z <= y - t.
+intros; apply Ule_trans with (x-t); auto.
+Save.
+
+Hint Immediate Uminus_le_compat.
+
+Add Morphism Uminus with signature Ueq ==> Ueq ==> Ueq as Uminus_eq_compat.
 intros x1 x2 eq1 x3 x4 eq2; apply Ule_antisym;
 apply Ule_trans with (x1-x4); auto.
 Save.
@@ -848,6 +913,25 @@ apply Ule_trans with ([1-] y + y); auto.
 Save.
 
 Hint Resolve Uminus_zero_right Uminus_one_left Uminus_le_zero.
+
+Lemma Uminus_eq : forall x, x-x == 0.
+auto.
+Save.
+Hint Resolve Uminus_eq.
+
+Lemma Uminus_le_left : forall x y, x - y <= x.
+unfold Uminus; auto.
+Save.
+
+Hint Resolve Uminus_le_left.
+
+
+Lemma Uminus_le_inv : forall x y, x - y <= [1-]y.
+intros.
+unfold Uminus.
+apply Uinv_le_compat; auto.
+Save.
+Hint Resolve Uminus_le_inv.
 
 Lemma Uminus_plus_simpl : forall x y, y <= x -> (x - y) + y == x.
 unfold Uminus; intros.
@@ -887,29 +971,216 @@ setoid_rewrite (Uinv_inv ([1-] y + t)).
 repeat norm_assoc_right; auto.
 Save.
 Hint Resolve Uesp_minus_distr.
+ 
+Lemma Uminus_esp_simpl_left : forall x y, [1-]x <= y -> x - (x & y) == [1-]y.
+unfold Uesp,Uminus; intros.
+apply Uinv_eq_compat.
+rewrite (Uplus_sym ([1-]x)).
+rewrite Uinv_plus_left; auto.
+Save.
+
+Lemma Uplus_esp_simpl : forall x y, (x - (x & y))+y == x+y.
+intros; apply (Ule_total ([1-]x) y); auto; intros.
+rewrite Uminus_esp_simpl_left; auto.
+rewrite (@Uplus_one x y); auto.
+rewrite (@Uesp_zero x y); auto.
+Save.
+Hint Resolve Uminus_esp_simpl_left Uplus_esp_simpl.
+
+Lemma Uminus_esp_le_inv  : forall x y, x - (x & y) <= [1-]y.
+intros; apply (Ule_total ([1-]x) y); auto; intros.
+rewrite (@Uesp_zero x y); auto.
+rewrite Uminus_zero_right; auto.
+Save.
+
+Hint Resolve Uminus_esp_le_inv.
+
+Lemma Uplus_esp_inv_simpl : forall x y, x <= [1-]y -> (x + y) & [1-]y == x.
+unfold Uesp; intros.
+apply Uinv_eq_perm_left.
+rewrite Uinv_inv; auto.
+Save.
+Hint Resolve Uplus_esp_inv_simpl.
+
+Lemma Uplus_inv_esp_simpl : forall x y, x <= y -> (x + [1-]y) & y == x.
+intros.
+apply Ueq_trans with ((x + [1-] y) & [1-][1-]y); auto.
+rewrite Uinv_inv; auto.
+Save.
+Hint Resolve Uplus_inv_esp_simpl.
+
 
 (** ** Definition and properties of max *)
 
 Definition max (x y : U) : U := (x - y) + y.
 
-Lemma max_le_right : forall x y : U, y <= x -> (max x y) == x.
+Lemma max_eq_right : forall x y : U, y <= x -> max x y == x.
 unfold max; auto.
 Save.
 
-Lemma max_le_left : forall x y : U, x <= y -> (max x y) == y.
+Lemma max_eq_left : forall x y : U, x <= y -> max x y == y.
 unfold max; auto.
+Save.
+
+Hint Resolve max_eq_right max_eq_left.
+
+Lemma max_eq_case : forall x y : U, orc (max x y == x) (max x y == y).
+intros; apply (Ule_total x y); auto.
+Save.
+
+Add Morphism max with signature Ueq ==> Ueq ==> Ueq as max_eq_compat.
+unfold max; intros.
+apply Uplus_eq_compat; auto.
+Save.
+
+Lemma max_le_right : forall x y : U, x <= max x y.
+intros; apply (Ule_total x y); intros; auto.
+rewrite max_eq_left; auto.
+rewrite max_eq_right; auto.
+Save.
+
+Lemma max_le_left : forall x y : U, y <= max x y.
+intros; apply (Ule_total x y); intros; auto.
+rewrite max_eq_left; auto.
+rewrite max_eq_right; auto.
 Save.
 
 Hint Resolve max_le_right max_le_left.
 
-Lemma max_le_case : forall x y : U, (orc (max x y == x) (max x y == y)).
+Lemma max_le : forall x y z : U, x <= z -> y <= z -> max x y <= z.
+intros; apply (Ule_total x y); intros; auto.
+rewrite max_eq_left; auto.
+rewrite max_eq_right; auto.
+Save.
+
+(** ** Definition and properties of min *)
+
+Definition min (x y : U) : U := [1-] ((y - x) + [1-]y).
+
+Lemma min_eq_right : forall x y : U, x <= y -> min x y == x.
+unfold min, Uminus; intros.
+apply Uinv_eq_perm_left; auto.
+Save.
+
+Lemma min_eq_left : forall x y : U, y <= x -> min x y== y.
+unfold min; intros.
+rewrite Uminus_le_zero; auto.
+Save.
+
+Hint Resolve min_eq_right min_eq_left.
+
+Lemma min_eq_case : forall x y : U, orc (min x y == x) (min x y == y).
 intros; apply (Ule_total x y); auto.
 Save.
 
-Add Morphism max : max_eq_compat.
-unfold max; intros.
+Add Morphism min with signature Ueq ==> Ueq ==> Ueq as min_eq_compat.
+unfold min; intros.
+apply Uinv_eq_compat; auto.
 apply Uplus_eq_compat; auto.
 Save.
+
+Lemma min_le_right : forall x y : U, min x y <=x.
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_left; auto.
+Save.
+
+Lemma min_le_left : forall x y : U, min x y <= y.
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto.
+Save.
+
+Hint Resolve min_le_right min_le_left.
+
+Lemma min_le : forall x y z : U, z <= x -> z <= y -> z <= min x y.
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto.
+rewrite min_eq_left; auto.
+Save.
+
+Lemma Uinv_min_max : forall x y, [1-](min x y)==max ([1-]x) ([1-]y).
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto; rewrite max_eq_right; auto.
+rewrite min_eq_left; auto; rewrite max_eq_left; auto.
+Save.
+
+Lemma Uinv_max_min : forall x y, [1-](max x y)==min ([1-]x) ([1-]y).
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_left; auto; rewrite max_eq_left; auto.
+rewrite min_eq_right; auto; rewrite max_eq_right; auto.
+Save.
+
+Lemma min_mult : forall x y k, 
+    min (k * x) (k * y) == k * (min x y).
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto; rewrite min_eq_right; auto.
+rewrite min_eq_left; auto; rewrite min_eq_left; auto.
+Save.
+Hint Resolve min_mult.
+
+Lemma min_plus : forall x1 x2 y1 y2, 
+    (min x1 x2)  + (min y1 y2) <= min (x1+y1) (x2+y2).
+intros; apply min_le; auto.
+Save.
+Hint Resolve min_plus.
+
+Lemma min_plus_cte : forall x y k, min (x + k) (y + k) == (min x y) + k.
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto; rewrite min_eq_right; auto.
+rewrite min_eq_left; auto; rewrite min_eq_left; auto.
+Save.
+Hint Resolve min_plus_cte.
+
+Lemma min_le_compat : forall x1 x2 y1 y2, 
+      x1<=y1 -> x2 <=y2 -> min x1 x2 <= min y1 y2.
+intros; apply min_le.
+apply Ule_trans with x1; auto.
+apply Ule_trans with x2; auto.
+Save.
+
+Lemma min_sym : forall x y, min x y == min y x.
+intros; apply (Ule_total x y); intros; auto.
+rewrite min_eq_right; auto.
+rewrite min_eq_left; auto.
+rewrite min_eq_left; auto.
+rewrite min_eq_right; auto.
+Save.
+Hint Resolve min_sym.
+
+
+Definition incr (f:nat->U) := forall n, f n <= f (S n).
+
+Lemma incr_mon : forall f, incr f -> forall n m, (n<=m)%nat -> f n <= f m.
+induction 2; auto.
+apply Ule_trans with (f m); auto.
+Save.
+Hint Resolve incr_mon.
+
+Lemma incr_decomp_aux : forall f g, incr f -> incr g -> 
+     forall n1 n2, (forall m, ~ ((n1<=m)%nat /\ f n1 <= g m))
+           -> (forall m, ~((n2<=m)%nat /\ g n2<= f m)) -> (n1<=n2)%nat -> False.
+intros; assert (absurd:~ g n2 < g n2); auto.
+assert (~(f n1 <= g n2)).
+apply not_and_elim_left with (1:= H1 n2); auto.
+assert (~(g n2 <= f n2)); auto.
+apply not_and_elim_left with (1:= H2 n2); auto.
+apply absurd; apply Ult_le_trans with (f n1); auto.
+apply Ule_trans with (f n2); auto.
+Save.
+
+Lemma incr_decomp : forall f g, incr f -> incr g -> 
+     orc (forall n, exc (fun m => (n<=m)%nat /\ f n <= g m)) 
+           (forall n, exc (fun m => (n<=m)%nat /\ g n <= f m)).
+intros f g incrf incrg; apply orc_intro; intros.
+apply H; clear H; intros.
+apply exc_intro_class; intros.
+apply H0; clear H0; intros.
+apply exc_intro_class; intros.
+case (dec_le n n0); intro.
+apply (incr_decomp_aux incrf incrg) with (n1:=n) (n2:=n0); auto.
+apply (incr_decomp_aux incrg incrf) with (n1:=n0) (n2:=n); auto; omega.
+Save.
+
+
 
 (** ** Other properties *)
 Lemma Uplus_minus_simpl_right : forall x y, y <= [1-] x -> (x + y) - y == x.
@@ -929,6 +1200,12 @@ setoid_rewrite (Uinv_inv ([1-] x + y)); auto.
 Save.
 
 Hint Resolve Uminus_assoc_left.
+
+Lemma Uminus_perm : forall x y z, (x - y) - z == (x - z) - y.
+intros; rewrite Uminus_assoc_left.
+rewrite (Uplus_sym y z); auto.
+Save.
+Hint Resolve Uminus_perm.
 
 Lemma Uminus_le_perm_left : forall x y z, y <= x -> x - y <= z -> x <= z + y.
 intros; setoid_rewrite <- (Uminus_plus_simpl H); auto.
@@ -972,6 +1249,14 @@ intros; apply Ueq_trans with (y - z + z); auto.
 Save.
 Hint Resolve Uminus_eq_perm_right.
 
+Lemma Uminus_plus_perm : forall x y z, y <= x -> z <= [1-]x -> x - y + z == x + z - y.
+intros; apply Uminus_eq_perm_right.
+apply Ule_trans with (y + z - y); auto.
+rewrite Uplus_minus_simpl_left; auto.
+apply Ule_trans with ([1-]x); auto.
+rewrite Uminus_perm.
+rewrite Uplus_minus_simpl_right; auto.
+Save.
 
 Lemma Uminus_zero_le : forall x y, x - y == 0 -> x <= y.
 intros x y; unfold Uminus; intros.
@@ -982,19 +1267,18 @@ setoid_rewrite <- H; auto.
 setoid_rewrite (Uinv_inv ([1-] x + y)); auto.
 Save.
 
-Lemma Uminus_lt_non_zero : forall x y, x < y -> ~y - x == 0.
+Lemma Uminus_lt_non_zero : forall x y, x < y -> ~0 == y - x.
 red; intros.
 apply H; auto.
 apply Uminus_zero_le; auto.
 Save.
 Hint Immediate Uminus_zero_le Uminus_lt_non_zero.
 
-Lemma Ult_le_nth : forall x y, x < y -> (exists n, x <= y - [1/]1+n).
-intros; elim (archimedian (x:=(y - x))); intros; auto.
-exists x0.
+Lemma Ult_le_nth : forall x y, x < y -> exc (fun n => x <= y - [1/]1+n).
+intros; apply (archimedian (x:=(y - x))); intros; auto.
+apply exc_intro with x0.
 apply Uminus_le_perm; auto.
 apply Ule_trans with (y - x); auto. 
-apply Ule_trans with (1 - x); auto.
 Save.
 
 Lemma Uminus_distr_left : forall x y z, (x - y) * z == (x * z) - (y * z).
@@ -1034,6 +1318,16 @@ apply Ueq_trans with ((y - z) + z + (x - y)).
 setoid_rewrite (Uminus_plus_simpl H0).
 setoid_rewrite (Uplus_sym y (x - y)); auto.
 norm_assoc_right; auto.
+Save.
+
+Lemma Uplus_minus_assoc_right : forall x y z, y <= [1-]x -> z <= y -> x + (y - z) == (x + y) - z.
+intros; unfold Uminus.
+apply Ueq_trans with ([1-] (x + ([1-] (x + y) + z)) + x).
+rewrite Uplus_assoc.
+rewrite (Uplus_sym x ([1-] (x + y))).
+rewrite Uinv_plus_left; auto.
+rewrite Uinv_plus_left; auto.
+apply Ule_trans with ([1-] (x + y) + y); auto.
 Save.
 
 (** ** Definition and properties of generalized sums *)
@@ -1120,6 +1414,125 @@ omega.
 case H0; intros; subst; auto.
 apply Ule_trans with (sigma f n); auto.
 Save.
+
+Lemma sigma_minus_decr : forall f n, (forall k, f (S k) <= f k) ->
+         sigma (fun k => f k - f (S k)) n == f O - f n.
+intros f n fmon;induction n; simpl.
+rewrite sigma_0; auto.
+rewrite sigma_S; rewrite IHn.
+rewrite Uplus_sym.
+rewrite Uplus_minus_assoc_right; auto.
+rewrite Uminus_plus_simpl; auto.
+elim n; intros; auto.
+apply Ule_trans with (f n0); auto.
+Save.
+
+Lemma sigma_minus_incr : forall f n, (forall k, f k <= f (S k)) ->
+         sigma (fun k => f (S k) - f k) n == f n - f O.
+intros f n fmon;induction n; simpl.
+rewrite sigma_0; auto.
+rewrite sigma_S; rewrite IHn.
+rewrite Uplus_minus_assoc_right; auto.
+elim n; intros; auto.
+apply Ule_trans with (f n0); auto.
+rewrite Uminus_plus_simpl; auto.
+Save.
+
+Definition sigma_inf (f : nat -> U) : U := lub (sigma f).
+
+(** ** Definition and properties of generalized products *)
+
+Definition prod (alpha : nat -> U) (n:nat) := comp Umult 1 alpha n.
+
+Lemma prod_0 : forall (f : nat -> U), prod f 0 = 1.
+trivial.
+Save.
+
+Lemma prod_S : forall (f :nat -> U) (n:nat), prod f (S n) = (f n) * (prod f n).
+trivial.
+Save.
+
+Lemma prod_1 : forall (f : nat -> U), prod f (S 0) == f O.
+intros; rewrite prod_S; auto.
+Save.
+
+Lemma prod_S_lift : forall (f :nat -> U) (n:nat), 
+          prod f (S n) == (f O) * (prod (fun k => f (S k)) n).
+intros f n; generalize f; induction n; simpl; intros; auto.
+rewrite prod_S.
+rewrite IHn.
+rewrite prod_S.
+rewrite Umult_assoc.
+rewrite (Umult_sym (f0 (S n)) (f0 O)); auto.
+Save.
+
+Lemma prod_decr : forall (f : nat -> U) (n m:nat), (n <= m)%nat -> (prod f m) <= (prod f n).
+intros f n m H; induction H; auto.
+intros; rewrite prod_S.
+apply Ule_trans with (2:=IHle); auto.
+Save.
+
+Hint Resolve prod_decr.
+
+Lemma prod_eq_compat : forall (f g: nat -> U) (n:nat), 
+ (forall k, (k < n)%nat -> f k == g k) -> (prod f n) == (prod g n).
+induction n; auto.
+intros; repeat rewrite prod_S.
+apply Ueq_trans with (g n * prod f n); auto with arith.
+Save.
+
+Lemma prod_le_compat : forall (f g: nat -> U) (n:nat), 
+ (forall k, (k < n)%nat -> f k <= g k) -> prod f n <= prod g n.
+induction n; auto.
+intros; repeat rewrite prod_S.
+apply Ule_trans with (g n * prod f n); auto with arith.
+Save.
+
+Lemma prod_zero : forall f n k, (k<n)%nat -> f k ==0 -> prod f n==0.
+induction n; simpl; intros; auto.
+absurd ((k < 0)%nat); auto with arith.
+rewrite prod_S.
+assert (k < n \/ k = n)%nat.
+omega.
+case H1; intros; subst; auto.
+rewrite (IHn k); auto.
+rewrite H0; auto.
+Save.
+
+Lemma prod_not_zero : forall f n, (forall k, (k<n)%nat -> 0 < f k )-> 0 < prod f n.
+induction n; simpl; intros; auto.
+rewrite prod_S; auto with arith.
+Save.
+
+Lemma prod_zero_elim : forall f n, prod f n==0 -> exc (fun k => (k<n)%nat /\ f k ==0).
+intros; apply class_exc; red; intros.
+assert (forall k, (k<n)%nat -> 0 < f k); intros.
+red; intro.
+apply H0.
+apply exc_intro with k; auto.
+absurd (0 < prod f n); auto.
+apply prod_not_zero; auto.
+Save.
+
+Hint Resolve prod_eq_compat prod_le_compat prod_not_zero.
+
+Lemma prod_le : forall f n k, (k<n)%nat -> prod f n <= f k.
+induction n; simpl; intros.
+casetype False; omega.
+rewrite prod_S.
+assert (k < n \/ k = n)%nat.
+omega.
+case H0; intros; subst; auto.
+apply Ule_trans with (prod f n); auto.
+Save.
+
+Lemma prod_minus : forall f n, prod f n - prod f (S n) == ([1-]f n)  * prod f n.
+intros f n; rewrite prod_S.
+apply Ueq_trans with (1 * prod f n - f n * prod f n).
+rewrite Umult_one_left; auto.
+rewrite <- Uminus_distr_left; auto.
+Save.
+
 
 (** ** Properties of [Unth] *)
 Lemma Unth_zero : [1/]1+0 == 1.
@@ -1389,9 +1802,7 @@ Save.
 Lemma lub_cte : forall c:U, (lub (fun n => c)) == c.
 intro; apply Ueq_trans with (lub (fun n => c * 1)); auto.
 apply Ueq_trans with (c * (lub (fun n => 1))); auto.
-(* Become useless with pattern-unification
-apply lub_eq_mult with (f:=fun (n:nat) => 1); auto. 
-*)
+apply lub_eq_mult with (f:=fun (n:nat) => 1); auto.
 setoid_rewrite lub_un; auto.
 Save.
 
@@ -1404,11 +1815,145 @@ Save.
 Hint Resolve lub_eq_plus_cte_left.
 
 
+Lemma min_lub_le : forall f g, 
+         lub (fun n => min (f n) (g n)) <= min (lub f) (lub g).
+intros; apply min_le.
+apply lub_le.
+intro; apply Ule_trans with (f n); auto.
+apply lub_le.
+intro; apply Ule_trans with (g n); auto.
+Save.
+
+Lemma min_lub_le_incr_aux : forall f g, incr f -> 
+         (forall n, exc (fun m => (n<=m)%nat /\ f n <= g m)) 
+         -> min (lub f) (lub g) <= lub (fun n => min (f n) (g n)).
+intros; apply Ule_trans with (lub f); auto.
+apply lub_le; intros.
+apply (H0 n); auto; intros m (H1,H2).
+apply Ule_trans with (min (f m) (g m)); auto.
+apply min_le; auto.
+apply le_lub with (f:=fun k : nat => min (f k) (g k)) ; auto.
+Save.
+
+Lemma min_lub_le_incr : forall f g, incr f -> incr g -> 
+         min (lub f) (lub g) <= lub (fun n => min (f n) (g n)).
+intros f g incrf incrg; apply (incr_decomp incrf incrg); auto; intros.
+apply (min_lub_le_incr_aux g incrf); auto.
+rewrite min_sym.
+apply Ule_trans with (lub (fun n : nat => min (g n) (f n))); auto.
+apply (min_lub_le_incr_aux f incrg); auto.
+Save.
+
+Lemma lub_eq_esp_right : 
+  forall (f : nat -> U) (k : U), lub (fun n : nat => f n & k) == lub f & k.
+intros; apply Ule_antisym.
+apply lub_le; auto.
+apply Uplus_inv_le_esp.
+rewrite <- lub_eq_plus_cte_right.
+apply lub_le_stable; auto.
+Save.
+Hint Resolve lub_eq_esp_right.
+
+(** ** Greatest lower bounds *)
+
+Definition glb (f:nat->U) := [1-]lub (fun n => [1-](f n)).
+
+Definition prod_inf (f : nat -> U) : U := glb (prod f).
+
+Lemma glb_le_stable:
+  forall f g : nat -> U, (forall n : nat, f n <= g n) -> glb f <= glb g.
+intros; unfold glb; auto.
+Save.
+Hint Resolve glb_le_stable.
+
+Lemma glb_eq_stable:
+  forall f g : nat -> U, (forall n : nat, f n == g n) -> glb f == glb g.
+intros; apply Ule_antisym; auto.
+Save.
+Hint Resolve glb_eq_stable.
+
+Lemma glb_cte: forall c : U, glb (fun _ : nat => c) == c.
+intros; unfold glb; auto.
+Save.
+Hint Resolve glb_cte.
+
+Lemma glb_eq_plus_cte_right:
+  forall (f : nat -> U) (k : U), glb (fun n : nat => f n + k) == glb f + k.
+unfold glb; intros.
+apply Ueq_trans with ([1-] lub (fun n => ([1-]f n) & [1-] k)); auto.
+apply Ueq_trans with ([1-] (lub (fun n => [1-]f n) & [1-] k)).
+apply Uinv_eq_compat; apply (lub_eq_esp_right (fun n => [1-]f n) ([1-]k)).
+rewrite Uinv_esp_plus; auto.
+Save.
+
+Lemma glb_eq_mult:
+  forall (k : U) (f : nat -> U), glb (fun n : nat => k * f n) == k * glb f.
+unfold glb; intros; auto.
+apply Ueq_trans with ([1-] lub (fun n : nat => k * [1-] (f n) + [1-]k)); auto.
+apply Ueq_trans with ([1-] (lub (fun n : nat => k * [1-] (f n)) + [1-]k)).
+apply Uinv_eq_compat.
+apply lub_eq_plus_cte_right with (f:=fun n : nat => k * [1-] f n).
+rewrite (lub_eq_mult k (fun n : nat =>  [1-] f n)).
+apply Uinv_eq_perm_left; auto.
+rewrite Udistr_inv_left; auto.
+Save.
+
+Lemma glb_le:   forall (f : nat -> U) (n : nat), glb f <= (f n).
+unfold glb; intros; apply Uinv_le_perm_left.
+apply le_lub with (f:=fun n => [1-]f n); auto.
+Save.
+
+Lemma le_glb: forall (f : nat -> U) (x:U), (forall n : nat, x <= f n)-> x <= glb f.
+unfold glb; intros; apply Uinv_le_perm_right.
+apply lub_le with (f:=fun n => [1-]f n); auto.
+Save.
+Hint Resolve glb_le.
+
+(*
+min_lub_le_incr:
+  forall f g : nat -> U,
+  incr f ->
+  incr g -> min (lub f) (lub g) <= lub (fun n : nat => min (f n) (g n))
+min_lub_le_incr_aux:
+  forall f g : nat -> U,
+  incr f ->
+  (forall n : nat, exc (fun m : nat => (n <= m)%nat /\ f n <= g m)) ->
+  min (lub f) (lub g) <= lub (fun n : nat => min (f n) (g n))
+min_lub_le:
+  forall f g : nat -> U,
+  lub (fun n : nat => min (f n) (g n)) <= min (lub f) (lub g)
+*)
+Lemma glb_le_esp :  forall f g, (glb f) & (glb g) <= glb (fun n => (f n) & (g n)).
+intros; apply le_glb; auto.
+Save.
+Hint Resolve glb_le_esp.
+
+Lemma Uesp_min : forall a1 a2 b1 b2, min a1 b1 & min a2 b2 <= min (a1 & a2) (b1 & b2).
+intros; apply min_le.
+apply Uesp_le_compat; auto.
+apply Uesp_le_compat; auto.
+Save.
+
+Lemma mon_seq_Succ : forall f : nat -> U, (forall n, f n <= f (S n)) -> mon_seq Ule f.
+red; intros.
+elim H0; auto.
+Save.
+Hint Immediate mon_seq_Succ.
+
 Variables f g : nat -> U.
 
-Hypothesis monf : (mon_seq Ule f).
-Hypothesis mong : (mon_seq Ule g).
+Hypothesis monf : forall n, f n <= f (S n).
+Hypothesis mong : forall n, g n <= g (S n).
 
+Lemma mon_seqf : mon_seq Ule f.
+auto.
+Save.
+
+Lemma mon_seqg : mon_seq Ule g.
+auto.
+Save.
+
+Hint Resolve mon_seqf mon_seqg.
 
 Lemma lub_lift : forall n,  (lub f) == (lub (fun k => f (n+k)%nat)).
 intro; apply Ule_antisym; auto.
@@ -1438,6 +1983,9 @@ apply le_lub with (f:=fun n : nat => f n + g n) (n:=(n+n0)%nat).
 Save.
 Hint Resolve lub_eq_plus.
 
+
+
+
 Variables k : U.
 Let prod := fun n => k * f n.
 
@@ -1458,7 +2006,404 @@ apply lub_le; intros.
 apply Ule_trans with ([1-] (g (n+n0))); auto with arith.
 Save.
 
+Variable h : nat -> U.
+Hypothesis dech : forall n, h (S n) <= h n.
+
+Lemma dec_sech : forall n m, (n <= m)%nat -> h m <= h n.
+induction 1; auto.
+apply Ule_trans with (h m); auto.
+Save.
+Hint Resolve dec_sech.
+
+Lemma glb_lift : forall n,  (glb h) == (glb (fun k => h (n+k)%nat)).
+intro; apply Ule_antisym.
+apply le_glb; auto.
+apply glb_le_stable; auto with arith.
+Save.
+
+Hint Resolve glb_lift.
+
+Lemma lub_glb_le : (forall n, f n <= h n) -> lub f <= glb h.
+intros; apply lub_le; intros.
+apply Ule_trans with (glb (fun k => h (n+k)%nat)); auto.
+apply le_glb; intros.
+apply Ule_trans with (f (n+n0)); auto with arith.
+Save.
+
 End lubs.
+
+Lemma double_lub_simpl : forall h : nat -> nat -> U,
+     (forall n m, h n m <= h (S n) m) ->  (forall n m, h n m <= h n (S m)) 
+     -> lub (fun n => lub (h n)) == lub (fun n => h n n). 
+intros; apply Ule_antisym.
+apply lub_le; intros.
+rewrite (lub_lift (h n) (H0 n) n); intros.
+apply lub_le; intros.
+apply Ule_trans with (h (n + n0)%nat (n+n0)%nat); auto.
+apply (@mon_seq_Succ (fun p => h p (n+n0)%nat) (fun p => H p (n+n0)%nat)); auto with arith.
+apply le_lub with (f:=fun p => h p p) (n:=(n + n0)%nat).
+apply lub_le; intros.
+apply Ule_trans with (lub (h n)); auto.
+apply le_lub with (f:=fun n0 : nat => lub (h n0)) (n:=n).
+Save.
+
+Lemma double_lub_exch_le : forall h : nat -> nat -> U,
+ lub (fun n => lub (fun m => h n m)) <= lub (fun m => lub (fun n => h n m)).
+intros; apply lub_le; intros.
+apply lub_le; intros.
+apply Ule_trans with (lub (fun m : nat => h n m)).
+apply (le_lub (fun m => h n m)).
+apply lub_le_stable; intros.
+apply (le_lub (fun n2 : nat => h n2 n1)).
+Save.
+Hint Resolve double_lub_exch_le.
+
+Hint Resolve double_lub_exch_le.
+
+Lemma double_lub_exch : forall h : nat -> nat -> U,
+ lub (fun n => lub (fun m => h n m)) == lub (fun m => lub (fun n => h n m)).
+intros; apply Ule_antisym; auto.
+Save.
+
+Hint Resolve double_lub_exch.
+
+(** *** Definitions *)
+Definition fle (A:Type) (f g:A->U) : Prop := forall x:A, (f x) <=  (g x).
+Definition feq (A:Type) (f g:A->U) : Prop := forall x:A, (f x) ==  (g x).
+Hint Unfold fle feq.
+Definition fplus (A:Type) (f g:A->U) (x:A) : U := (f x) + (g x).
+Definition fesp (A:Type) (f g:A->U) (x:A) : U := (f x) & (g x).
+Definition fminus (A:Type) (f g:A->U) (x:A) : U := (f x) - (g x).
+Definition finv (A:Type) (f:A->U) (x:A) : U := Uinv (f x).
+Definition fmult (A:Type) (k:U) (f:A->U) (x:A) : U := k * (f x).
+Definition f_one (A:Type) (x : A) : U := U1.
+Definition f_zero (A:Type) (x : A) : U := U0.
+Definition f_cte (A:Type) (c:U) (x : A) : U := c.
+Definition flub (A:Type) (fn:nat->A->U) (x : A) : U := lub (fun n => fn n x).
+Definition fglb (A:Type) (fn:nat->A->U) (x : A) : U := glb (fun n => fn n x).
+Definition increase (A:Type)(fn : nat -> A -> U) := forall n, fle (fn n) (fn (S n)).
+Definition decrease (A:Type)(fn : nat -> A -> U) := forall n, fle (fn (S n)) (fn n).
+
+Implicit Arguments f_one [].
+Implicit Arguments f_zero [].
+Implicit Arguments f_cte [].
+
+(** *** Elementary properties *)
+
+Lemma feq_refl : forall (A:Type) (f : A->U), feq f f.
+auto.
+Save.
+Hint Resolve feq_refl.
+
+Lemma feq_sym : forall (A:Type) (f g : A->U), feq f g -> feq g f.
+auto.
+Save.
+
+Lemma feq_trans : forall (A:Type) (f g h : A->U), feq f g -> feq g h -> feq f h.
+unfold feq; intros; apply Ueq_trans with (g x); auto.
+Save.
+
+Lemma fSetoid : forall (A:Type), Setoid_Theory (A->U) (@feq A).
+split; auto.
+exact (@feq_trans A).
+Save.
+
+Add Setoid (fun A => A->U) feq fSetoid as f_Setoid.
+
+Lemma feq_fle : forall (A:Type) (f g : A->U), feq f g -> fle f g.
+auto.
+Save.
+
+Lemma feq_fle_sym : forall (A:Type) (f g : A->U), feq f g -> fle g f.
+auto.
+Save.
+Hint Immediate feq_fle feq_fle_sym.
+
+Lemma fle_le : forall (A:Type) (f g : A->U), fle f g -> forall x, f x <= g x.
+auto.
+Save.
+
+Lemma fle_refl : forall (A:Type) (f:A->U), fle f f.
+auto.
+Save.
+
+Lemma fle_trans : forall (A:Type) (f g h : A->U), fle f g -> fle g h -> fle f h.
+unfold fle; intros; apply Ule_trans with (g x); auto.
+Save.
+
+Add Relation (fun (A:Type) => A->U) fle 
+   reflexivity proved by fle_refl transitivity proved by fle_trans  as fle_Relation.
+
+Lemma fle_feq_trans : forall (A:Type) (f g h : A->U), fle f g -> feq g h -> fle f h.
+unfold fle; intros; apply Ule_trans with (g x); auto.
+Save.
+
+Lemma feq_fle_trans : forall (A:Type) (f g h : A->U), feq f g -> fle g h -> fle f h.
+unfold fle; intros; apply Ule_trans with (g x); auto.
+Save.
+
+Lemma fle_antisym : forall (A:Type) (f g : A->U), fle f g -> fle g f -> feq f g.
+auto.
+Save.
+Hint Resolve fle_antisym.
+
+Add Morphism fle with signature  feq ==> feq ==> iff as  fle_feq_compat. 
+split; intros.
+apply feq_fle_trans with x1; auto.
+apply fle_feq_trans with x0; auto.
+apply feq_fle_trans with x2; auto.
+apply fle_feq_trans with x3; auto.
+Save.
+
+Lemma fle_fplus_left : forall (A:Type) (f g : A->U), fle f (fplus f g).
+unfold fle,fplus; auto.
+Save.
+
+Lemma fle_fplus_right : forall (A:Type) (f g : A->U), fle g (fplus f g).
+unfold fle,fplus; auto.
+Save.
+
+Lemma fle_fmult : forall (A:Type) (k:U)(f : A->U), fle (fmult k f) f.
+unfold fle,fmult; auto.
+Save.
+
+Lemma fle_zero : forall (A:Type) (f : A->U), fle (f_zero A) f.
+unfold fle,f_zero; auto.
+Save.
+
+Lemma fle_one : forall (A:Type) (f : A->U), fle f (f_one A).
+unfold fle,f_one; auto.
+Save.
+
+Lemma feq_finv_finv : forall (A:Type) (f : A->U), feq (finv (finv f)) f.
+unfold feq,finv; auto.
+Save.
+
+Lemma fle_fesp_left : forall (A:Type) (f g : A->U), fle (fesp f g) f.
+unfold fle,fesp; auto.
+Save.
+
+Lemma fle_fesp_right : forall (A:Type) (f g : A->U), fle (fesp f g) g.
+unfold fle,fesp; auto.
+Save.
+
+(** *** Defining morphisms *)
+
+Add Morphism fplus with signature feq ==> feq ==> feq as fplus_feq_compat.
+unfold feq,fplus; auto.
+Save.
+
+Add Morphism fplus with signature fle ++> fle ++> fle as fplus_fle_compat.
+unfold fle,fplus; auto.
+Save.
+
+Add Morphism finv with signature feq ==> feq as finv_feq_compat.
+unfold feq,finv; auto.
+Save.
+
+Add Morphism finv with signature fle --> fle as finv_fle_compat.
+unfold fle,finv; auto.
+Save.
+
+Add Morphism fmult with signature Ueq ==> feq ==> feq as fmult_feq_compat.
+unfold feq,fmult; auto.
+Save.
+
+Add Morphism fmult with signature Ule ++> fle ++> fle as fmult_fle_compat.
+unfold fle,fmult; auto.
+Save.
+
+Add Morphism fminus with signature feq ==> feq ==> feq as fminus_feq_compat.
+unfold feq,fminus; auto.
+Save.
+
+Add Morphism fminus with signature fle ++> fle --> fle as fminus_fle_compat.
+unfold fle,fminus; auto.
+Save.
+
+
+Add Morphism fesp with signature feq ==> feq ==> feq as fesp_feq_compat.
+unfold feq,fesp; auto.
+Save.
+
+Add Morphism fesp with signature fle ++> fle ++> fle as fesp_fle_compat.
+unfold fle,fesp; auto.
+Save.
+
+Hint Immediate feq_sym fplus_fle_compat fplus_feq_compat 
+fmult_fle_compat fmult_feq_compat fminus_fle_compat fminus_feq_compat.
+
+Hint Resolve fle_fplus_left  fle_fplus_right fle_zero  fle_one feq_finv_finv finv_fle_compat
+fle_fmult fle_fesp_left fle_fesp_right.
+
+Hint Resolve finv_feq_compat finv_fle_compat.
+
+(** ** Fixpoints of functions of type $A\ra\U$ *)
+Section FixDef.
+Variable A :Type.
+
+Variable F : (A->U) -> A -> U.
+Definition Fmonotonic :=  forall f g, (fle f g) -> fle (F f) (F g).
+Definition Fstable :=  forall f g, (feq f g) -> feq (F f) (F g).
+
+Lemma Fmonotonic_stable : Fmonotonic -> Fstable.
+unfold Fmonotonic, Fstable; auto.
+Save.
+
+Lemma Fmonotonic_fle : Fmonotonic -> forall f g, fle f g -> fle (F f) (F g).
+auto.
+Save.
+
+Lemma Fmonotonic_le : Fmonotonic -> forall f g, fle f g -> forall x, F f x <= F g x.
+auto.
+Save.
+
+Lemma Fstable_feq : Fstable -> forall f g, feq f g -> feq (F f) (F g).
+auto.
+Save.
+
+Lemma Fstable_eq : Fstable -> forall f g, feq f g -> forall x, F f x == F g x.
+auto.
+Save.
+
+Hint Resolve Fmonotonic_fle Fstable_feq Fmonotonic_le  Fstable_eq.
+
+Hypothesis Fmon : Fmonotonic.
+
+Fixpoint muiter (n:nat) (x:A) {struct n} : U := 
+        match n with O => 0 | S p => F (muiter p) x end.
+
+Fixpoint nuiter (n:nat) (x:A) {struct n} : U := 
+        match n with O => 1 | S p => F (nuiter p) x end.
+
+Definition mufix (x:A) := lub (fun n => muiter n x).
+Definition nufix (x:A) := glb (fun n => nuiter n x).
+
+Lemma mufix_inv : forall f, fle (F f) f -> fle mufix f.
+unfold mufix; red; intros; apply lub_le.
+intro n; generalize x; induction n; simpl; intros; auto.
+apply Ule_trans with (F f x0); auto.
+Save.
+Hint Resolve mufix_inv.
+
+Lemma nufix_inv : forall f, fle f (F f) -> fle f nufix.
+unfold nufix; red; intros; apply le_glb.
+intro n; generalize x; induction n; simpl; intros; auto.
+apply Ule_trans with (F f x0); auto.
+Save.
+Hint Resolve nufix_inv.
+
+Lemma mufix_le : fle mufix (F mufix).
+unfold mufix at 1; red; intros; apply lub_le.
+destruct n; simpl; auto.
+apply Fmon.
+unfold mufix; intros.
+red; intro x0; apply (le_lub (fun n0 : nat => muiter n0 x0)).
+Save.
+Hint Resolve mufix_le.
+
+Lemma nufix_sup : fle (F nufix) nufix.
+unfold nufix at 2; red; intros; apply le_glb.
+destruct n; simpl; auto.
+apply Fmon.
+unfold nufix; intros.
+intro x0; apply (glb_le (fun n0 : nat => nuiter n0 x0)).
+Save.
+Hint Resolve nufix_sup.
+
+Definition Fcontlub := forall (fn : nat -> A -> U), increase fn ->
+           fle (F (flub fn)) (flub (fun n => F (fn n))).
+Definition Fcontglb := forall (fn : nat -> A -> U), decrease fn ->
+           fle (fglb (fun n => F (fn n))) (F (fglb fn)).
+
+Lemma Fcontlub_fle : Fcontlub -> forall (fn : nat -> A -> U), increase fn ->
+           fle (F (flub fn)) (flub (fun n => F (fn n))).
+auto.
+Save.
+
+Lemma Fcontglb_fle : Fcontglb -> forall (fn : nat -> A -> U), decrease fn ->
+           fle (fglb (fun n => F (fn n))) (F (fglb fn)).
+auto.
+Save.
+
+
+Hypothesis muFcont : forall (fn : nat -> A -> U), increase fn ->
+           fle (F (flub fn)) (flub (fun n => F (fn n))).
+
+Hypothesis nuFcont : forall (fn : nat -> A -> U), decrease fn -> 
+           fle (fglb (fun n => F (fn n))) (F (fglb fn)).
+
+Implicit Arguments muFcont [].
+Implicit Arguments nuFcont [].
+
+Lemma incr_muiter : increase muiter.
+red; intros; induction n; red; simpl; intros; auto.
+Save.
+
+Lemma decr_nuiter : decrease nuiter.
+red; intros; induction n; red; simpl; intros; auto.
+Save.
+
+Hint Resolve incr_muiter decr_nuiter.
+
+Lemma mufix_sup : forall x, F mufix x <= mufix x.
+intros; apply Ule_trans with (lub (fun n => F (muiter n) x)); auto.
+apply (muFcont muiter) with (x:=x); auto.
+unfold mufix.
+apply lub_le.
+intro n; apply (le_lub (fun n0 : nat => muiter n0 x) (S n)); auto .
+Save.
+Hint Resolve mufix_sup.
+
+Lemma nufix_le : forall x, nufix x <= F nufix x.
+intros; apply Ule_trans with (glb (fun n => F (nuiter n) x)); auto.
+unfold nufix.
+apply le_glb.
+intro n; apply (glb_le (fun n0 : nat => nuiter n0 x) (S n)); auto .
+apply (nuFcont nuiter) with (x:=x); auto.
+Save.
+Hint Resolve nufix_le.
+
+Lemma mufix_eq : forall x, mufix x == F mufix x.
+intros; apply Ule_antisym; auto.
+Save.
+Hint Resolve mufix_eq.
+
+Lemma nufix_eq : forall x, nufix x == F nufix x.
+intros; apply Ule_antisym; auto.
+Save.
+Hint Resolve nufix_eq.
+
+End FixDef.
+Hint Unfold Fmonotonic.
+Hint Resolve Fmonotonic_stable.
+Hint Resolve Fmonotonic_fle Fstable_feq Fmonotonic_le  Fstable_eq.
+Hint Resolve Fcontlub_fle Fcontglb_fle.
+
+Definition Fcte (A:Type) (f:A->U) := fun (_:A->U) => f.
+Lemma Fcte_mon : forall (A:Type) (f:A->U), Fmonotonic (Fcte f).
+repeat red; unfold Fcte; auto.
+Save.
+
+Lemma mufix_cte : forall (A:Type) (f:A->U), feq (mufix (Fcte f)) f.
+red; intros; unfold mufix.
+apply Ule_antisym.
+apply lub_le; intros.
+generalize x; induction n; unfold Fcte; simpl; intros; auto.
+apply Ule_trans with (muiter (Fcte f) (S O) x); auto.
+apply le_lub with (f:=fun n : nat => muiter (Fcte f) n x) (n:=S O).
+Save.
+
+Lemma nufix_cte : forall (A:Type) (f:A->U), feq (nufix (Fcte f)) f.
+red; intros; unfold nufix.
+apply Ule_antisym.
+apply Ule_trans with (nuiter (Fcte f) (S O) x); auto.
+apply glb_le with (f:=fun n : nat => nuiter (Fcte f) n x) (n:=S O).
+apply le_glb; intros.
+generalize x; induction n; unfold Fcte; simpl; intros; auto.
+Save.
+
+Hint Resolve mufix_cte nufix_cte.
 
 (** ** Properties of barycenter of two points *)
 Section Barycenter.
@@ -1496,11 +2441,25 @@ apply Ueq_trans with
 apply Ueq_trans with 
 (((a * x + (a * [1-] x + (b * [1-] y + [1-] (a + b)))))); auto.
 Save.
+
+Lemma Uinv_bary_le : 
+   forall x y : U,   a * [1-] x + b * [1-] y <= [1-] (a * x + b * y).
+intros; rewrite Uinv_bary; auto.
+Save.
+
 End Barycenter.
+Hint Resolve Uinv_bary_le.
+
+Lemma Uinv_half_bary : 
+   forall x y : U, [1-] ([1/2] * x + [1/2] * y) == [1/2] * [1-] x + [1/2] * [1-] y.
+intros; rewrite Uinv_bary; auto.
+rewrite Unth_one_plus; rewrite Uinv_one; auto.
+Save.
+Hint Resolve Uinv_half_bary.
 
 (** ** Properties of generalized sums [sigma] *)
-Lemma sigma_plus : 
-  forall (f g : nat -> U) (n:nat), (sigma (fun k => (f k) + (g k)) n) == (sigma f n) + (sigma g n).
+Lemma sigma_plus : forall (f g : nat -> U) (n:nat), 
+   (sigma (fun k => (f k) + (g k)) n) == (sigma f n) + (sigma g n).
 intros; induction n; simpl; auto.
 repeat rewrite sigma_S; setoid_rewrite IHn.
 repeat norm_assoc_right; apply Uplus_eq_compat_right.
@@ -1558,8 +2517,8 @@ Save.
 
 Hint Resolve sigma_prod_maj.
 
-Lemma sigma_prod_le :  forall (f g : nat -> U) (c:U), 
- (forall k, (f k) <= c) -> forall n, (retract g n) -> (sigma (fun k => (f k) * (g k)) n) <= c * (sigma g n).
+Lemma sigma_prod_le :  forall (f g : nat -> U) (c:U), (forall k, (f k) <= c) 
+   -> forall n, (retract g n) -> (sigma (fun k => (f k) * (g k)) n) <= c * (sigma g n).
 induction n; simpl; intros; auto.
 repeat rewrite sigma_S.
 apply Ule_trans with ((f n) * (g n) + (c * sigma g n)); auto.
@@ -1568,7 +2527,7 @@ setoid_rewrite (Udistr_plus_left c (retractS H0)); auto.
 Save.
 
 Lemma sigma_prod_ge :  forall (f g : nat -> U) (c:U), (forall k, c <= (f k)) 
- -> forall n, (retract g n) -> c * (sigma g n) <= (sigma (fun k => (f k) * (g k)) n).
+   -> forall n, (retract g n) -> c * (sigma g n) <= (sigma (fun k => (f k) * (g k)) n).
 induction n; simpl; intros; auto.
 repeat rewrite sigma_S.
 setoid_rewrite (Udistr_plus_left c (retractS H0)); auto.
@@ -1578,7 +2537,7 @@ Save.
 Hint Resolve sigma_prod_maj sigma_prod_le  sigma_prod_ge.
 
 Lemma sigma_inv : forall (f g : nat -> U) (n:nat), (retract f n) ->
-  [1-] (sigma (fun k => (f k) * (g k)) n) == (sigma (fun k => (f k) * [1-] (g k)) n) + [1-] (sigma f n).
+  [1-] (sigma (fun k => f k * g k) n) == (sigma (fun k => f k * [1-] (g k)) n) + [1-] (sigma f n).
 intros; induction n; simpl; repeat rewrite sigma_S; auto.
 apply Uplus_eq_simpl_right with ((f n) * (g n)).
 setoid_rewrite 
@@ -1613,10 +2572,11 @@ Save.
 
 (** ** Product by an integer *)
 
+(** *** Definition of [Nmult n x] written [n */ x] *)
 Fixpoint Nmult (n: nat) (x : U) {struct n} : U := 
    match n with O => 0 | (S O) => x | S p => x + (Nmult p x) end.
 
-(** Condition for [n */ x] to be exact *)
+(** *** Condition for [n */ x] to be exact : $n = 0$ or $x\leq \frac{1}{n}$ *)
 Definition Nmult_def (n: nat) (x : U) := 
    match n with O => True | S p => x <= [1/]1+p end.
 
@@ -1657,8 +2617,7 @@ unfold class; destruct n; intuition.
 Save.
 Hint Resolve Nmult_def_class.
 
-Add Morphism Nmult_def : Nmult_def_eq_compat.
-
+Add Morphism Nmult_def with signature eq ==> Ueq ==> iff as Nmult_def_eq_compat.
 
 Infix "*/" := Nmult (at level 60) : U_scope.
 unfold Nmult_def; destruct x; intuition.
@@ -1671,52 +2630,53 @@ destruct n; auto.
 Save.
 Hint Resolve Nmult_def_zero.
 
-Lemma Nmult_0 : forall (x:U), (O*/x) = 0.
+(** *** Properties of [n */ x] *)
+
+Lemma Nmult_0 : forall (x:U), O*/x = 0.
 trivial.
 Save.
 
-Lemma Nmult_1 : forall (x:U), ((S O)*/x) = x.
+Lemma Nmult_1 : forall (x:U), (S O)*/x = x.
 trivial.
 Save.
 
 Lemma Nmult_zero : forall n, n */ 0 == 0.
 induction n; simpl; auto.
 destruct n; auto.
-rewrite IHn; auto.
 Save.
 
-Lemma Nmult_SS : forall (n:nat) (x:U), (S (S n) */x) = x + (S n */ x).
+Lemma Nmult_SS : forall (n:nat) (x:U), S (S n) */x = x + (S n */ x).
 destruct n; simpl; auto.
 Save.
 
-Lemma Nmult_2 : forall (x:U), (2*/x) = x + x.
+Lemma Nmult_2 : forall (x:U), 2*/x = x + x.
 trivial.
 Save.
 
-Lemma Nmult_S : forall (n:nat) (x:U), (S n */ x) == x + (n*/x).
+Lemma Nmult_S : forall (n:nat) (x:U), S n */ x == x + (n*/x).
 destruct n; simpl; auto.
 Save.
 
 Hint Resolve Nmult_1 Nmult_SS Nmult_2 Nmult_S.
 
-Add Morphism Nmult : Nmult_eq_compat.
+Add Morphism Nmult with signature eq ==> Ueq ==> Ueq as Nmult_eq_compat.
 intros n x1 x2 eq1; induction n; simpl; auto; intros.
 destruct n; repeat rewrite Nmult_SS; trivial.
 apply Uplus_eq_compat; auto.
 Save.
 Hint Resolve Nmult_eq_compat.
 
-Lemma Nmult_eq_compat_right : forall (n m:nat) (x:U), (n = m)%nat -> (n */ x) == (m */ x).
+Lemma Nmult_eq_compat_right : forall (n m:nat) (x:U), (n = m)%nat -> n */ x == m */ x.
 intros; subst n; trivial.
 Save.
 Hint Resolve Nmult_eq_compat_right.
 
-Lemma Nmult_le_compat_right :  forall n x y, (x <= y) -> (n */ x) <= (n */ y).
+Lemma Nmult_le_compat_right :  forall n x y, x <= y -> n */ x <= n */ y.
 intros; induction n; auto.
 rewrite (Nmult_S n x); rewrite (Nmult_S n y);auto.
 Save.
 
-Lemma Nmult_le_compat_left : forall n m x, (n <= m)%nat -> (n */ x) <= (m */ x).
+Lemma Nmult_le_compat_left : forall n m x, (n <= m)%nat -> n */ x <= m */ x.
 induction 1; trivial.
 rewrite (Nmult_S m x); auto.
 apply Ule_trans with (m */ x); auto.
@@ -1739,30 +2699,30 @@ exact (Unth_prop n).
 Save.
 Hint Resolve Nmult_Unth_prop.
 
-Lemma Nmult_n_Unth: forall n:nat, (n */ [1/]1+n) == [1-] ([1/]1+n).
+Lemma Nmult_n_Unth: forall n:nat, n */ [1/]1+n == [1-] ([1/]1+n).
 intro; apply Uinv_eq_perm_right; auto.
 Save.
 
-Lemma Nmult_Sn_Unth: forall n:nat, (S n */ [1/]1+n) == 1.
+Lemma Nmult_Sn_Unth: forall n:nat, S n */ [1/]1+n == 1.
 intro; rewrite (Nmult_S n ([1/]1+n)).
 rewrite (Nmult_n_Unth n); auto.
 Save.
 
 Hint Resolve Nmult_n_Unth Nmult_Sn_Unth.
 
-Lemma Nmult_ge_Sn_Unth: forall n k, (S n <= k)%nat -> (k */ [1/]1+n) == 1.
+Lemma Nmult_ge_Sn_Unth: forall n k, (S n <= k)%nat -> k */ [1/]1+n == 1.
 induction 1; auto.
 rewrite (Nmult_S m ([1/]1+n)); rewrite IHle; auto.
 Save.
 
-Lemma Nmult_le_n_Unth: forall n k, (k <= n)%nat -> (k */ [1/]1+n) <= [1-] ([1/]1+n).
+Lemma Nmult_le_n_Unth: forall n k, (k <= n)%nat -> k */ [1/]1+n <= [1-] ([1/]1+n).
 intros; apply Ule_trans with (n */ [1/]1+n); auto.
 Save.
 
 Hint Resolve Nmult_ge_Sn_Unth Nmult_le_n_Unth.
 
 
-Lemma Nmult_Umult_assoc_left : forall n x y, (Nmult_def n x) -> (n*/(x*y)) == (n*/x)*y.
+Lemma Nmult_Umult_assoc_left : forall n x y, Nmult_def n x -> n*/(x*y) == (n*/x)*y.
 intros n x y; induction n; auto; intros.
 destruct n; auto.
 repeat rewrite Nmult_SS.
@@ -1777,13 +2737,13 @@ Save.
 
 Hint Resolve Nmult_Umult_assoc_left.
 
-Lemma Nmult_Umult_assoc_right : forall n x y, (Nmult_def n y) -> (n*/(x*y)) == (x*(n*/y)).
+Lemma Nmult_Umult_assoc_right : forall n x y, Nmult_def n y -> n*/(x*y) == x*(n*/y).
 intros; rewrite (Umult_sym x y); rewrite (Nmult_Umult_assoc_left n y x H); auto.
 Save.
 
 Hint Resolve Nmult_Umult_assoc_right.
 
-Lemma plus_Nmult_distr : forall n m x, (n + m */ x)== (n */ x) + (m */ x).
+Lemma plus_Nmult_distr : forall n m x, (n + m) */ x== (n */ x) + (m */ x).
 intros n m x; induction n; auto; intros.
 rewrite plus_Sn_m.
 rewrite (Nmult_S (n + m) x).
@@ -1791,7 +2751,7 @@ setoid_rewrite IHn.
 rewrite (Nmult_S n x); auto.
 Save.
 
-Lemma Nmult_Uplus_distr : forall n x y, (n */ x + y)== (n */ x) + (n */ y).
+Lemma Nmult_Uplus_distr : forall n x y, n */ (x + y) == (n */ x) + (n */ y).
 intros n x y; induction n.
 simpl; auto.
 rewrite (Nmult_S n (x+y)).
@@ -1803,7 +2763,7 @@ norm_assoc_left.
 apply Uplus_eq_compat; auto.
 Save.
 
-Lemma Nmult_mult_assoc : forall n m x, (n * m */ x)== (n */ (m */ x)).
+Lemma Nmult_mult_assoc : forall n m x, (n * m) */ x == n */ (m */ x).
 intros n m x; induction n; intros; auto.
 simpl mult.
 rewrite (plus_Nmult_distr m (n * m) x).
@@ -1854,7 +2814,7 @@ Hint Resolve Nmult_neq_zero.
 
 
 Lemma Nmult_le_simpl :  forall (n:nat) (x y:U), 
-   (Nmult_def (S n) x) -> (Nmult_def (S n) y) -> (S n */ x) <= (S n */ y) -> x <= y.
+   Nmult_def (S n) x -> Nmult_def (S n) y -> (S n */ x) <= (S n */ y) -> x <= y.
 intros; apply Umult_le_simpl_left with (S n */ [1/]1+n).
 auto.
 assert (Nmult_def (S n) ([1/]1+n)); auto.
@@ -1866,7 +2826,7 @@ apply Ule_trans with ([1/]1+n * (S n */ x)); auto.
 Save.
 
 Lemma Nmult_Unth_le : forall (n1 n2 m1 m2:nat), 
-   (n2 * S n1<= m2 * S m1)%nat -> (n2 */ [1/]1+m1 <= m2 */ [1/]1+n1).
+   (n2 * S n1<= m2 * S m1)%nat -> n2 */ [1/]1+m1 <= m2 */ [1/]1+n1.
 intros.
 apply Ule_trans with ((n2 * S n1) */ ([1/]1+m1 * [1/]1+n1)).
 rewrite (Nmult_mult_assoc n2 (S n1) ([1/]1+m1 * [1/]1+n1)).
@@ -1880,7 +2840,7 @@ Save.
 
 Lemma Nmult_Unth_eq : 
    forall (n1 n2 m1 m2:nat), 
-   (n2 * S n1= m2 * S m1)%nat -> (n2 */ [1/]1+m1 == m2 */ [1/]1+n1).
+   (n2 * S n1= m2 * S m1)%nat -> n2 */ [1/]1+m1 == m2 */ [1/]1+n1.
 intros.
 apply Ueq_trans with ((n2 * S n1) */ ([1/]1+m1 * [1/]1+n1)).
 rewrite (Nmult_mult_assoc n2 (S n1) ([1/]1+m1 * [1/]1+n1)).
@@ -1903,6 +2863,102 @@ Save.
 
 Hint Immediate Nmult_def_lt.
 
+(** ** Conversion from booleans to U *)
+
+Definition B2U (b:bool) :U := if b then 1 else 0.
+Definition NB2U (b:bool) :U := if b then 0 else 1.
+
+Lemma B2Uinv : feq NB2U (finv B2U).
+unfold NB2U,feq,finv,B2U; intro b; case b; auto.
+Save.
+
+Lemma NB2Uinv : feq B2U (finv NB2U).
+unfold NB2U,feq,finv,B2U; intro b; case b; auto.
+Save.
+
+Hint Resolve B2Uinv NB2Uinv.
+
+(** ** Particular sequences *)
+  (**  $pmin (p)(n) = p - \frac{1}{2^n}$ *)
+
+Definition pmin (p:U) (n:nat) :=  p - ([1/2]^n).
+
+Add Morphism pmin with signature Ueq ==> eq ==> Ueq as pmin_eq_compat.
+unfold pmin; auto.
+Save.
+
+(** *** Properties of the invariant *)
+Lemma pmin_esp_S : forall p n, pmin (p & p) n == pmin p (S n) & pmin p (S n).
+unfold pmin at 1; intros.
+setoid_rewrite (half_exp n).
+setoid_rewrite (Uesp_minus_distr p p ([1/2]^(S n)) ([1/2]^(S n))); auto.
+Save.
+
+Lemma pmin_esp_le : forall p n,  pmin p (S n) <= [1/2] * (pmin (p & p) n) + [1/2].
+intros; setoid_rewrite (pmin_esp_S p n); auto.
+Save.
+
+Lemma pmin_plus_eq :  forall p n, p <= [1/2] -> pmin p (S n) == [1/2] * (pmin (p + p) n).
+intros; unfold pmin at 2.
+setoid_rewrite (Uminus_distr_right [1/2] (p + p) ([1/2]^n)).
+setoid_rewrite (half_twice H); auto.
+Save.
+
+Lemma pmin_0 : forall p:U, pmin p O == 0.
+unfold pmin; simpl; auto.
+Save.
+
+Lemma pmin_le : forall (p:U) (n:nat), p - ([1/]1+n) <= pmin p n.
+unfold pmin; intros.
+apply Uminus_le_compat_right.
+induction n; simpl; intros; auto.
+apply Ule_trans with ([1/2] * ([1/]1+n)); auto.
+Save.
+
+Hint Resolve pmin_0 pmin_le.
+
+Lemma le_p_lim_pmin : forall p, p <= lub (pmin p).
+intro; apply Ule_lt_lim; intros.
+assert (exc (fun n : nat => t <= p - [1/]1+n)).
+apply Ult_le_nth; trivial.
+apply H0; auto; intros n H1.
+apply Ule_trans with (p - [1/]1+n); auto.
+apply Ule_trans with (pmin p n); auto.
+Save.
+
+Lemma le_lim_pmin_p : forall p, lub (pmin p) <= p.
+intro; apply lub_le; unfold pmin; auto.
+Save.
+Hint Resolve le_p_lim_pmin le_lim_pmin_p.
+
+Lemma eq_lim_pmin_p : forall p, lub (pmin p) == p.
+intros; apply Ule_antisym; auto.
+Save.
+
+Hint Resolve eq_lim_pmin_p.
+
+(** Particular case where p = 1 *)
+
+Definition U1min := pmin 1.
+
+Lemma eq_lim_U1min : lub U1min == 1.
+unfold U1min; auto.
+Save.
+
+Lemma U1min_S : forall n, U1min (S n) == [1/2]*(U1min n) + [1/2].
+intros; unfold U1min at 2,pmin.
+rewrite (Uminus_distr_right [1/2] 1 ([1/2]^n)).
+rewrite Umult_one_right.
+rewrite Uminus_plus_perm; auto.
+rewrite Unth_one_plus; auto.
+Save.
+
+Lemma U1min_0 : U1min O == 0.
+unfold U1min; auto.
+Save.
+
+Hint Resolve eq_lim_U1min U1min_S U1min_0.
+
 (** ** Tactic for simplification of goals *)
 
 Ltac Usimpl :=  match goal with 
@@ -1914,6 +2970,10 @@ Ltac Usimpl :=  match goal with
  |  |- context [(Umult ?x 0)]     => setoid_rewrite (Umult_zero_right x)
  |  |- context [(Umult 1 ?x)]     => setoid_rewrite (Umult_one_left x)
  |  |- context [(Umult ?x 1)]     => setoid_rewrite (Umult_one_right x)
+ |  |- context [(Uesp 0 ?x)]     => setoid_rewrite (Uesp_zero_left x)
+ |  |- context [(Uesp ?x 0)]     => setoid_rewrite (Uesp_zero_right x)
+ |  |- context [(Uesp 1 ?x)]     => setoid_rewrite (Uesp_one_left x)
+ |  |- context [(Uesp ?x 1)]     => setoid_rewrite (Uesp_one_right x)
  |  |- context [(Uminus 0 ?x)]    => setoid_rewrite (Uminus_le_zero 0 x); 
                                         [apply (Upos x)| idtac]
  |  |- context [(Uminus ?x 0)]    => setoid_rewrite (Uminus_zero_right x)
@@ -1964,5 +3024,316 @@ Ltac Usimpl :=  match goal with
                                              apply Umult_eq_compat_left
 end.
 
+(** ** Intervals *)
+
+(** *** Definition *)
+Record IU : Type := mk_IU {low:U; up:U; proper:low <= up}.
+
+Hint Resolve proper.
+
+(** the all set : [[0,1]] *)
+Definition full := mk_IU (Upos 1).
+(** singleton : [[x]] *)
+Definition singl (x:U) := mk_IU (Ule_refl x).
+(** down segment : [[0,x]] *)
+Definition inf (x:U) := mk_IU (Upos x).
+(** up segment : [[x,1]] *)
+Definition sup (x:U) := mk_IU (Unit x).
+
+(** *** Relations *)
+Definition Iin (x:U) (I:IU) := low I <= x /\ x <= up I.
+
+Definition Iincl I J := low J <= low I /\ up I <= up J.
+
+Definition Ieq I J := low I == low J /\ up I == up J.
+Hint Unfold Iin Iincl Ieq.
+
+(** *** Properties *)
+Lemma Iin_low : forall I, Iin (low I) I.
+auto.
+Save.
+
+Lemma Iin_up : forall I, Iin (up I) I.
+auto.
+Save.
+
+Hint Resolve Iin_low Iin_up.
+
+Lemma Iin_singl_elim : forall x y, Iin x (singl y) -> x == y.
+unfold Iin; intuition (simpl; auto).
+Save.
+
+
+Lemma Iin_inf_elim : forall x y, Iin x (inf y) -> x <= y.
+unfold Iin; intuition (simpl; auto).
+Save.
+
+Lemma Iin_sup_elim : forall x y, Iin x (sup y) -> y <= x.
+unfold Iin; intuition (simpl; auto).
+Save.
+
+Lemma Iin_singl_intro : forall x y, x == y -> Iin x (singl y).
+auto.
+Save.
+
+Lemma Iin_inf_intro : forall x y, x <= y -> Iin x (inf y).
+auto.
+Save.
+
+Lemma Iin_sup_intro : forall x y, y <= x -> Iin x (sup y).
+auto.
+Save.
+
+Hint Immediate Iin_inf_elim Iin_sup_elim Iin_singl_elim.
+Hint Resolve Iin_inf_intro Iin_sup_intro Iin_singl_intro.
+
+Lemma Iin_class : forall I x, class (Iin x I).
+unfold class, Iin; split.
+apply Ule_class; intuition.
+apply Ule_class; intuition.
+Save.
+
+Lemma Iincl_class : forall I J, class (Iincl I J).
+unfold class, Iincl; split.
+apply Ule_class; intuition.
+apply Ule_class; intuition.
+Save.
+
+Lemma Ieq_class : forall I J, class (Ieq I J).
+unfold class, Ieq; split.
+apply Ueq_class; intuition.
+apply Ueq_class; intuition.
+Save.
+Hint Resolve Iin_class Iincl_class Ieq_class.
+
+Lemma Iincl_in : forall I J, Iincl I J -> forall x, Iin x I -> Iin x J.
+unfold Iin,Iincl; intuition.
+apply Ule_trans with (low I); auto.
+apply Ule_trans with (up I); auto.
+Save.
+
+Lemma Iincl_low : forall I J, Iincl I J -> low J <= low I.
+unfold Iincl; intuition.
+Save.
+
+Lemma Iincl_up : forall I J, Iincl I J -> up I <= up J.
+unfold Iincl; intuition.
+Save.
+
+Hint Immediate Iincl_low Iincl_up.
+
+Lemma Iincl_refl : forall I, Iincl I I.
+unfold Iincl; intuition.
+Save.
+Hint Resolve Iincl_refl.
+
+Lemma Iincl_trans : forall I J K, Iincl I J -> Iincl J K -> Iincl I K.
+unfold Iincl; intuition.
+apply Ule_trans with (low J); auto.
+apply Ule_trans with (up J); auto.
+Save.
+
+Lemma Ieq_incl : forall I J, Ieq I J -> Iincl I J.
+unfold Ieq,Iincl; intuition.
+Save.
+
+Lemma Ieq_incl_sym : forall I J, Ieq I J -> Iincl J I.
+unfold Ieq,Iincl; intuition.
+Save.
+Hint Immediate Ieq_incl Ieq_incl_sym.
+
+Lemma lincl_eq_compat : forall I J K L,
+     Ieq I J -> Iincl J K -> Ieq K L -> Iincl I L.
+intros; apply Iincl_trans with J; auto.
+intros; apply Iincl_trans with K; auto.
+Save.
+
+Lemma lincl_eq_trans : forall I J K,
+     Iincl I J -> Ieq J K -> Iincl I K.
+intros; apply lincl_eq_compat with I J; auto.
+Save.
+
+Lemma Ieq_incl_trans : forall I J K,
+     Ieq I J -> Iincl J K -> Iincl I K.
+intros; apply lincl_eq_compat with J K; auto.
+Save.
+
+Lemma Iincl_antisym : forall I J, Iincl I J -> Iincl J I -> Ieq I J.
+unfold Iincl; intuition.
+Save.
+Hint Immediate Iincl_antisym.
+
+Lemma Ieq_refl : forall I, Ieq I I.
+unfold Ieq; auto.
+Save.
+Hint Resolve Ieq_refl.
+
+Lemma Ieq_sym : forall I J, Ieq I J -> Ieq J I.
+unfold Ieq; intuition.
+Save.
+Hint Immediate Ieq_sym.
+
+Lemma Ieq_trans : forall I J K, Ieq I J -> Ieq J K -> Ieq I K.
+unfold Ieq; intuition.
+apply Ueq_trans with (low J); auto.
+apply Ueq_trans with (up J); auto.
+Save.
+
+Lemma Isingl_eq : forall x y, Iincl (singl x) (singl y) -> x==y.
+unfold Iincl, singl; intuition.
+Save.
+Hint Immediate Isingl_eq.
+
+Lemma Iincl_full : forall I, Iincl I full.
+unfold Iincl, full; intuition.
+Save.
+Hint Resolve Iincl_full.
+
+(** *** Operations on intervals *)
+
+Definition Iplus I J := mk_IU (Uplus_le_compat (proper I) (proper J)).
+
+Lemma low_Iplus : forall I J, low (Iplus I J)=low I + low J.
+trivial.
+Save.
+
+Lemma up_Iplus : forall I J, up (Iplus I J)=up I + up J.
+trivial.
+Save.
+
+Lemma Iplus_in : forall I J x y, Iin x I -> Iin y J -> Iin (x+y) (Iplus I J).
+unfold Iin,Iplus; intuition (simpl; auto).
+Save.
+
+Lemma lplus_in_elim : 
+forall I J z, low I <= [1-]up J -> Iin z (Iplus I J) 
+                -> exc (fun x => Iin x I /\
+                                                   exc (fun y => Iin y J /\ z==x+y)).
+intros I J z H (H1,H2); simpl in H1,H2; intros.
+assert (low I <= z).
+apply Ule_trans with (low I + low J); auto.
+apply (Ule_total (z-low I)  (up J)); intros.
+apply class_exc.
+(* case [z-low I <= up j] *)
+apply exc_intro with (low I); split; auto.
+apply exc_intro with (z-low I); split; auto.
+assert (low I <= [1-]low J).
+apply Ule_trans with ([1-]up J); auto.
+split; auto.
+apply Uplus_le_perm_right; auto.
+rewrite Uplus_sym; auto.
+(* case [up j <= z-low I] *)
+assert (up J <= z); auto.
+apply Ule_trans with (z - low I); auto.
+apply exc_intro with (z-up J); split; auto.
+split; auto.
+apply Uplus_le_perm_left; auto.
+rewrite Uplus_sym; auto.
+apply exc_intro with (up J); auto.
+Save.
+
+Definition Imult I J := mk_IU (Umult_le_compat (proper I) (proper J)).
+
+Lemma low_Imult : forall I J, low (Imult I J) = low I * low J.
+trivial.
+Save.
+
+Lemma up_Imult : forall I J, up (Imult I J) = up I * up J.
+trivial.
+Save.
+
+
+Definition Imultk p I := mk_IU (Umult_le_compat_right p (proper I)).
+
+Lemma low_Imultk : forall p I, low (Imultk p I) = p * low I.
+trivial.
+Save.
+
+Lemma up_Imultk : forall p I, up (Imultk p I) = p * up I.
+trivial.
+Save.
+
+Lemma Imult_in : forall I J x y, Iin x I -> Iin y J -> Iin (x*y) (Imult I J).
+unfold Iin; intuition (simpl; auto).
+Save.
+
+Lemma Imultk_in : forall p I x , Iin x I -> Iin (p*x) (Imultk p I).
+unfold Iin; intuition (simpl; auto).
+Save.
+
+(** *** limits *)
+
+Definition lim : forall I:nat->IU, (forall n, Iincl (I (S n)) (I n)) -> IU.
+intros; exists (lub (fun n => low (I n))) (glb (fun n => up (I n))).
+unfold glb; apply lub_inv; intros; auto.
+Defined.
+
+Lemma low_lim : forall (I:nat->IU) (Idec : forall n, Iincl (I (S n)) (I n)),
+             low (lim I Idec) = lub (fun n => low (I n)).
+trivial.
+Save.
+
+Lemma up_lim : forall (I:nat->IU) (Idec : forall n, Iincl (I (S n)) (I n)),
+             up (lim I Idec) = glb (fun n => up (I n)).
+trivial.
+Save.
+
+Lemma lim_Iincl :  forall (I:nat->IU) (Idec : forall n, Iincl (I (S n)) (I n)),
+             forall n, Iincl (lim I Idec) (I n).
+unfold lim,Iincl; simpl; split.
+apply le_lub with (f:=fun n0 : nat => low (I n0)).
+apply glb_le with (f:=fun n0 : nat => up (I n0)).
+Save.
+Hint Resolve lim_Iincl.
+
+Lemma Iincl_lim :  forall J (I:nat->IU) (Idec : forall n, Iincl (I (S n)) (I n)),
+             (forall n, Iincl J (I n)) -> Iincl J (lim I Idec).
+unfold lim,Iincl; simpl; split.
+apply lub_le with (f:=fun n0 : nat => low (I n0)); intro.
+case (H n); auto.
+apply le_glb with (f:=fun n0 : nat => up (I n0)); intro.
+case (H n); auto.
+Save.
+
+Lemma Iim_incl_stable : forall I J (Idec : forall n, Iincl (I (S n)) (I n)) 
+               (Jdec : forall n, Iincl (J (S n)) (J n)), 
+               (forall n, Iincl (I n) (J n)) -> Iincl (lim I Idec) (lim J Jdec).
+intros; apply Iincl_lim. 
+intros; apply Iincl_trans with (I n); auto.
+Save.
+Hint Resolve Iim_incl_stable.
+
+(** *** Fixpoints *)
+Section Ifixpoint.
+Variable A : Type.
+Variable F : (A -> IU) -> A -> IU.
+Hypothesis Fmon : forall I J, (forall x, Iincl (I x) (J x)) -> forall x, Iincl (F I x) (F J x).
+
+Fixpoint Iiter (n:nat) : A -> IU := 
+     match n with O => fun x => full | S m => F (Iiter  m) end.
+
+Lemma Iiter_decr : forall x n, Iincl (Iiter (S n) x) (Iiter n x).
+intros x n; generalize x; induction n; simpl; auto.
+Save.
+Hint Resolve Iiter_decr.
+
+Definition Ifix (x:A) := lim (fun n => Iiter n x) (Iiter_decr x).
+
+Lemma Iincl_fix : forall (x:A), Iincl (F Ifix x) (Ifix x).
+unfold Ifix at 2; intros.
+apply Iincl_lim.
+destruct n; simpl; auto.
+apply Fmon.
+unfold Ifix; intros.
+apply (lim_Iincl (fun n0 : nat => Iiter n0 x0)).
+Save.
+
+Lemma Iincl_inv : forall f, (forall x, Iincl (f x) (F f x)) -> forall x, Iincl (f x) (Ifix x).
+unfold Ifix; intros; apply Iincl_lim.
+intro n; generalize x; induction n; simpl; intros; auto.
+apply Iincl_trans with (F f x0); auto.
+Save.
+
+End Ifixpoint.
 End Univ_prop.
 

@@ -1,25 +1,9 @@
-(* This program is free software; you can redistribute it and/or      *)
-(* modify it under the terms of the GNU Lesser General Public License *)
-(* as published by the Free Software Foundation; either version 2.1   *)
-(* of the License, or (at your option) any later version.             *)
-(*                                                                    *)
-(* This program is distributed in the hope that it will be useful,    *)
-(* but WITHOUT ANY WARRANTY; without even the implied warranty of     *)
-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      *)
-(* GNU General Public License for more details.                       *)
-(*                                                                    *)
-(* You should have received a copy of the GNU Lesser General Public   *)
-(* License along with this program; if not, write to the Free         *)
-(* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA *)
-(* 02110-1301 USA                                                     *)
-
-
-(** * Bernouilli.v: Simulating Bernouilli distribution *)
+(** * Bernoulli.v: Simulating Bernoulli and Binomial distributions *)
 Require Export Prog.
 Require Export Prelude.
 Set Implicit Arguments.
 
-Module Bernouilli (Univ:Universe).
+Module Bernoulli (Univ:Universe).
 Module RP := (Rules Univ).
 (* begin hide *)
 Import Univ.
@@ -28,20 +12,21 @@ Import RP.PP.
 Import RP.PP.MP.
 Import RP.PP.MP.UP.
 (* end hide *)
-(** ** Program for computing a Bernouilli distribution
-       bernouilli p gives true with probability p 
+
+(** ** Program for computing a Bernoulli distribution
+       bernoulli p gives true with probability p 
        and false with probability (1-p)
 <<
-let rec bernouilli x = if flip then 
-        if x < 1/2 then false else bernouilli (2 p - 1)
-        else if x < 1/2 then bernouilli (2 p) else true
+let rec bernoulli x = if flip then 
+        if x < 1/2 then false else bernoulli (2 p - 1)
+        else if x < 1/2 then bernoulli (2 p) else true
 >>*)
 Hypothesis dec_demi : forall x : U, {x < [1/2]}+{[1/2] <= x}. 
 
-Definition Fbern (f: U -> (distr bool)) (p:U) := 
+Definition Fbern (f: U -> distr bool) (p:U) := 
     Mif Flip 
-       (if dec_demi p then (Munit false) else (f (p & p)))
-       (if dec_demi p then (f (p + p)) else (Munit true)).
+       (if dec_demi p then Munit false else f (p & p))
+       (if dec_demi p then f (p + p) else Munit true).
 
 Lemma Fbern_mon : forall f g : U -> distr bool, 
  (forall n, le_distr (f n) (g n)) -> forall n, le_distr (Fbern f n) (Fbern g n).
@@ -49,199 +34,243 @@ unfold Fbern; intros.
 apply Mif_mon; case (dec_demi n); auto.
 Save.
 
-Definition bernouilli : U -> (distr bool) := Mfix Fbern Fbern_mon.
+Definition bernoulli : U -> distr bool := Mfix Fbern Fbern_mon.
 
-(** ** Properties of the Bernouilli program *)
+(** ** Properties of the Bernoulli program *)
 
-(** *** Definition of the invariant 
-    $q(p)(n) = p - \frac{1}{2^n}$ *)
+(** *** Proofs using fixpoint rules *)
 
-Definition q (p:U) (n:nat) :=  p - ([1/2]^n).
+Definition Mubern (q: bool -> U) (bern : U -> U) (p:U) := 
+                if dec_demi p then [1/2]*(q false)+[1/2]*(bern (p+p))
+                                      else  [1/2]*(bern (p&p)) + [1/2]*(q true).
 
-Add Morphism q : q_eq_compat.
-unfold q; auto.
+Lemma Mubern_eq : forall (q: bool -> U) (f:U -> distr bool) (p:U),
+             mu (Fbern f p) q  == Mubern q (fun y => mu (f y) q) p.
+intros; unfold Fbern,Mubern; intros.
+case (dec_demi p).
+rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
+rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
 Save.
 
-(** *** Properties of the invariant *)
-Lemma q_esp_S : forall p n, q (p & p) n == q p (S n) & q p (S n).
-unfold q at 1; intros.
-setoid_rewrite (half_exp n).
-setoid_rewrite (Uesp_minus_distr p p ([1/2]^(S n)) ([1/2]^(S n))); auto.
+   
+
+Lemma Mubern_mon : forall (q: bool -> U), Fmonotonic (Mubern q).
+red; red; intros; unfold Mubern; auto.
+case (dec_demi x); repeat Usimpl; auto.
+Save.
+Hint Resolve Mubern_mon Mubern_eq.
+
+Lemma Bern_eq : 
+    forall q : bool -> U, forall p, mu (bernoulli p) q == mufix (Mubern q) p.
+intros; apply Ueq_sym.
+unfold bernoulli; apply mufix_mu with (muF:=(Mubern q)) (q:=fun (p:U) => q); auto. 
+Save.
+Hint Resolve Bern_eq.
+
+Lemma Bern_commute : forall q : bool -> U, 
+   mu_muF_commute_le Fbern Fbern_mon (fun (x:U)=>q) (Mubern q).
+red; auto.
+Save.
+Hint Resolve Bern_commute.
+
+Lemma Bern_term : forall p, mu (bernoulli p) (f_one bool) == 1.
+intros; apply Ueq_trans with (mufix (Mubern (f_one bool)) p); auto.
+apply Ueq_trans with (lub U1min); auto.
+unfold mufix; apply lub_eq_stable.
+intro n; generalize p; induction n; simpl; auto.
+intros; rewrite U1min_S.
+unfold Mubern at 1; simpl.
+unfold f_one; repeat Usimpl.
+case (dec_demi p0); rewrite IHn; repeat Usimpl; auto.
+Save.
+Hint Resolve Bern_term.
+
+(** *** p is an invariant of Mubern qtrue *)
+
+Lemma MuBern_true : forall p, Mubern B2U (fun q => q) p == p.
+intros; unfold Mubern, B2U; case (dec_demi p); intros; repeat Usimpl.
+apply half_twice; auto.
+apply half_esp; auto.
+Save.
+Hint Resolve MuBern_true.
+
+Lemma MuBern_false : forall p, Mubern (finv B2U) (finv (fun q => q)) p == [1-]p.
+intros; unfold Mubern, finv, B2U; case (dec_demi p); intros; repeat Usimpl.
+rewrite Uplus_sym; rewrite Uinv_half; repeat Usimpl.
+apply half_twice; auto.
+rewrite Uinv_esp_plus.
+apply half_twice; auto.
+Save.
+Hint Resolve MuBern_false.
+
+
+Lemma Bern_true : forall p, mu (bernoulli p) B2U == p.
+intros; unfold bernoulli.
+apply muF_eq with 
+    (muFqinv:= Mubern (qinv (fun (x:U) => B2U) p))
+    (muFq:=Mubern B2U)
+    (q:=fun (x:U) => B2U)
+    (f:=fun (x:U) => x);intros; auto.
+unfold qinv; auto.
+red; intro; unfold qinv.
+apply Ule_trans with ([1-]x); auto.
+exact (Bern_term p).
 Save.
 
-Lemma q_esp_le : forall p n,  (q p (S n)) <= [1/2] * (q (p & p) n) + [1/2].
-intros; setoid_rewrite (q_esp_S p n); auto.
+Lemma Bern_false : forall p, mu (bernoulli p) NB2U == [1-]p.
+intros; apply Ueq_trans with (mu (bernoulli p) (finv B2U)).
+apply mu_stable_eq; auto.
+rewrite mu_inv_minus.
+rewrite Bern_term; rewrite Bern_true; auto.
 Save.
 
-Lemma q_plus_eq :  forall p n, (p <= [1/2]) -> (q p (S n)) == [1/2] * (q (p + p) n).
-intros; unfold q at 2.
-setoid_rewrite (Uminus_distr_right [1/2] (p + p) ([1/2]^n)).
-setoid_rewrite (half_twice H); auto.
+Lemma Mubern_inv : forall (q: bool -> U) (f:U -> U) (p:U),
+      Mubern (finv q) (finv f) p == [1-] Mubern q f p.
+intros; unfold Mubern,finv.
+case (dec_demi p); intro; auto.
 Save.
+ 
+(** *** Proofs using lubs *)
+(**   Invariant [pmin p]  $pmin(p)(n) = p - \frac{1}{2^n}$ *)
 
-Lemma q_0 : forall p:U, q p O == 0.
-unfold q; simpl; auto.
-Save.
+(** Property : $\forall p, \ok{p}{\mathrm{bernoulli}~p}{\mathbf{result}=\mathrm{true}}$ *)
 
-Lemma p_le : forall (p:U) (n:nat), p - ([1/]1+n) <= q p n.
-unfold q; intros.
-apply Uminus_le_compat_right.
-induction n; simpl; intros; auto.
-apply Ule_trans with ([1/2] * ([1/]1+n)); auto.
-Save.
+Definition qtrue (p:U) := B2U.
+Definition qfalse (p:U) := NB2U.
 
-Hint Resolve p_le.
-
-Lemma lim_q_p : forall p, p <= lub (q p).
-intro; apply Ule_lt_lim; intros.
-assert (exists n : nat, t <= p - [1/]1+n).
-apply Ult_le_nth; trivial.
-case H0; intros n H1.
-apply Ule_trans with (p - [1/]1+n); auto.
-apply Ule_trans with (q p n); auto.
-Save.
-
-Hint Resolve lim_q_p.
-    
-(** *** Proof of main results *)
-
-(** Property : $\forall p, \ok{p}{\mathrm{bernouilli}~p}{\mathbf{result}=\mathrm{true}}$ *)
-
-Definition qtrue (b:bool) := if b then 1 else 0.
-Definition qfalse (b:bool) := if b then 0 else 1.
-
-Lemma bernouilli_true :   okfun (fun p => p) bernouilli qtrue.
-unfold bernouilli; intros.
-apply okfun_le_compat with (fun p => lub (q p)) qtrue; auto.
-apply fixrule with (p:= fun p => (q p)); auto; intros.
-apply q_0.
+Lemma bernoulli_true :   okfun (fun p => p) bernoulli qtrue.
+unfold bernoulli; intros.
+apply okfun_le_compat with (fun p => lub (pmin p)) qtrue; auto.
+apply fixrule with (p:= fun p => (pmin p)); auto; intros.
 red; simpl; intros.
 unfold Fbern.
 red.
 setoid_rewrite 
  (Mif_eq Flip 
    (if dec_demi x then Munit false else f (x & x))
-   (if dec_demi x then f (x + x) else Munit true) qtrue); simpl.
+   (if dec_demi x then f (x + x) else Munit true) (qtrue x)); simpl.
 case (dec_demi x); simpl; intros.
 (* Case x < 1/2 *)
 unfold flip, unit, ctrue, cfalse; simpl.
 repeat Usimpl.
-apply Ule_trans with ((q (x + x) i) * [1/2]).
+apply Ule_trans with ((pmin (x + x) i) * [1/2]).
 assert (x<= [1/2]); auto.
-setoid_rewrite (q_plus_eq i H0).
+setoid_rewrite (pmin_plus_eq i H0).
 Usimpl; trivial.
-Usimpl; apply H; auto.
+Usimpl; apply (H (x+x)); auto.
 (* Case 1/2 <= x *)
 unfold flip, unit, ctrue, cfalse; simpl.
 repeat Usimpl.
-apply Ule_trans with ((q (x & x) i) * [1/2] + [1/2]).
-apply Ule_trans with (1:=(q_esp_le x i)); auto.
-repeat Usimpl; apply H; auto.
+apply Ule_trans with ((pmin (x & x) i) * [1/2] + [1/2]).
+apply Ule_trans with (1:=(pmin_esp_le x i)); auto.
+repeat Usimpl; apply (H (x&x)); auto.
 Save.
 
-(** Property : $\forall p, \ok{1-p}{\mathrm{bernouilli}~p}{\mathbf{result}=\mathrm{false}} $ *)
+(** Property : $\forall p, \ok{1-p}{\mathrm{bernoulli}~p}{\mathbf{result}=\mathrm{false}} $ *)
 
-Lemma bernouilli_false :  okfun (fun p => [1-] p) bernouilli qfalse.
-unfold bernouilli; intros.
-apply okfun_le_compat with (fun p => lub (q ([1-] p))) qfalse; auto.
-apply fixrule with (p:= fun p => (q ([1-] p))); auto; intros.
-apply q_0.
+Lemma bernoulli_false :  okfun (fun p => [1-] p) bernoulli qfalse.
+unfold bernoulli; intros.
+apply okfun_le_compat with (fun p => lub (pmin ([1-] p))) qfalse; auto.
+apply fixrule with (p:= fun p => pmin ([1-] p)); auto; intros.
 red; simpl; intros.
 unfold Fbern.
 red.
 setoid_rewrite 
  (Mif_eq Flip 
    (if dec_demi x then Munit false else f (x & x))
-   (if dec_demi x then f (x + x) else Munit true) qfalse); simpl.
+   (if dec_demi x then f (x + x) else Munit true) (qfalse x)); simpl.
 case (dec_demi x); simpl; intros.
 (* Case x < 1/2 *)
 unfold flip, unit, ctrue, cfalse; simpl.
 repeat Usimpl.
-apply Ule_trans with ([1/2] + (q ([1-] (x + x)) i) * [1/2]).
-apply Ule_trans with (1:=q_esp_le ([1-] x) i).
+apply Ule_trans with ([1/2] + (pmin ([1-] (x + x)) i) * [1/2]).
+apply Ule_trans with (1:=pmin_esp_le ([1-] x) i).
 setoid_rewrite (Uinv_plus_esp x x).
 Usimpl; auto.
-repeat Usimpl; apply H; auto.
+repeat Usimpl; apply (H (x+x)); auto.
 (* Case 1/2 <= x *)
 unfold flip, unit, ctrue, cfalse; simpl.
 repeat Usimpl.
-apply Ule_trans with ((q ([1-] (x & x)) i) * [1/2]).
+apply Ule_trans with ((pmin ([1-] (x & x)) i) * [1/2]).
 setoid_rewrite (Uinv_esp_plus x x).
 assert ([1-] x <= [1/2]); auto.
-setoid_rewrite (q_plus_eq i H0).
+setoid_rewrite (pmin_plus_eq i H0).
 repeat Usimpl; trivial.
-repeat Usimpl; apply H; auto.
+repeat Usimpl; apply (H (x&x)); auto.
 Save.
 
-(** Probability for the result of $(\mathrm{bernouilli}~p)$ to be true is exactly $p$ *)
+(** Probability for the result of $(\mathrm{bernoulli}~p)$ to be true is exactly $p$ *)
 
-Lemma qtrue_qfalse_inv : forall b:bool, qtrue b == [1-] (qfalse b).
+Lemma qtrue_qfalse_inv : forall (b:bool) (x:U), qtrue x b == [1-] (qfalse x b).
 intros; case b; simpl; auto.
 Save.
 
-Lemma bernouilli_eq_true :  forall p, mu (bernouilli p) qtrue == p.
+Lemma bernoulli_eq_true :  forall p, mu (bernoulli p) (qtrue p) == p.
 intros; apply Ule_antisym.
-apply Ule_trans with (mu (bernouilli p) (fun b => [1-] (qfalse b))).
-apply (mu_monotonic (bernouilli p)).
+apply Ule_trans with (mu (bernoulli p) (fun b => [1-] (qfalse p b))).
+apply (mu_monotonic (bernoulli p)).
 repeat red; intros.
 setoid_rewrite (qtrue_qfalse_inv x); auto.
-apply Ule_trans with ([1-] (mu (bernouilli p) qfalse)).
-exact (mu_stable_inv (bernouilli p) qfalse).
+apply Ule_trans with ([1-] (mu (bernoulli p) (qfalse p))).
+exact (mu_stable_inv (bernoulli p) (qfalse p)).
 apply Uinv_le_perm_left.
-apply (bernouilli_false p).
-apply (bernouilli_true p).
+apply (bernoulli_false p).
+apply (bernoulli_true p).
 Save.
 
-Lemma bernouilli_eq_false :  forall p, mu (bernouilli p) qfalse == [1-]p.
+Lemma bernoulli_eq_false :  forall p, mu (bernoulli p) (qfalse p)== [1-]p.
 intros; apply Ule_antisym.
-apply Ule_trans with (mu (bernouilli p) (fun b => [1-] (qtrue b))).
-apply (mu_monotonic (bernouilli p)).
+apply Ule_trans with (mu (bernoulli p) (fun b => [1-] (qtrue p b))).
+apply (mu_monotonic (bernoulli p)).
 repeat red; intros.
-setoid_rewrite (qtrue_qfalse_inv x); auto.
-apply Ule_trans with ([1-] (mu (bernouilli p) qtrue)).
-exact (mu_stable_inv (bernouilli p) qtrue).
+setoid_rewrite (qtrue_qfalse_inv x p); auto.
+apply Ule_trans with ([1-] (mu (bernoulli p) (qtrue p))).
+exact (mu_stable_inv (bernoulli p) (qtrue p)).
 apply Uinv_le_perm_left; Usimpl.
-apply (bernouilli_true p).
-apply (bernouilli_false p).
+apply (bernoulli_true p).
+apply (bernoulli_false p).
 Save.
 
-Lemma bernouilli_eq :  forall p f, mu (bernouilli p) f == p * f true + ([1-]p) * f false.
-intros; apply Ueq_trans with (mu (bernouilli p) (fun b => f true * qtrue b + f false * qfalse b)).
+Lemma bernoulli_eq :  forall p f, mu (bernoulli p) f == p * f true + ([1-]p) * f false.
+intros; apply Ueq_trans with (mu (bernoulli p) (fun b => f true * qtrue p b + f false * qfalse p b)).
 apply mu_stable_eq.
-unfold feq,qtrue,qfalse.
+unfold feq,qtrue,qfalse,B2U,NB2U.
 destruct x; repeat Usimpl; auto.
-rewrite (mu_stable_plus (bernouilli p) (f:=fun b => f true * qtrue b) (g:=fun b => f false * qfalse b)).
-repeat red; unfold fle,finv,qtrue,qfalse; destruct x; repeat Usimpl; auto.
-rewrite (mu_stable_mult (bernouilli p) (f true) qtrue).
-rewrite (mu_stable_mult (bernouilli p) (f false) qfalse).
-rewrite bernouilli_eq_true; rewrite bernouilli_eq_false.
+rewrite (mu_stable_plus (bernoulli p) (f:=fun b => f true * qtrue p b) 
+                                                          (g:=fun b => f false * qfalse p b)).
+repeat red; unfold fle,finv,qtrue,qfalse,B2U,NB2U; destruct x; repeat Usimpl; auto.
+rewrite (mu_stable_mult (bernoulli p) (f true) (qtrue p)).
+rewrite (mu_stable_mult (bernoulli p) (f false) (qfalse p)).
+rewrite bernoulli_eq_true; rewrite bernoulli_eq_false.
 apply Uplus_eq_compat; auto.
 Save.
 
-Lemma bernouilli_total : forall p , mu (bernouilli p) (f_one bool)==1.
-intros; rewrite bernouilli_eq; unfold f_one; repeat Usimpl; auto.
+Lemma bernoulli_total : forall p , mu (bernoulli p) (f_one bool)==1.
+intros; rewrite bernoulli_eq; unfold f_one; repeat Usimpl; auto.
 Save.
 
-(** * Binomial distribution :
-         (binomial~p~n)  gives k with probability $C_k^n p^k(1-p)^{n-k}$ *)
+(** ** Binomial distribution *)
 
+(**  $ (\mathrm{binomial}~p~n)$  gives $k$ with probability $C_k^n p^k(1-p)^{n-k}$ *)
+
+(** *** Definition and properties of binomial coefficients *)
 Fixpoint comb (k n:nat) {struct n} : nat := 
          match n with O => match k with O => (1%nat) | (S l) => O end
                 | (S m) => match k with O => (1%nat)
                                                     | (S l) => ((comb l m) + (comb k m))%nat end
          end.
 
-Lemma comb_0_n : forall n, comb 0 n = (1%nat).
+Lemma comb_0_n : forall n, comb 0 n = 1%nat.
 destruct n; trivial.
 Save.
 
-Lemma comb_not_le : forall n k, (le (S n) k) -> (comb k n)=0%nat.
+Lemma comb_not_le : forall n k, le (S n) k -> comb k n=0%nat.
 induction n; destruct k; simpl; auto with zarith; intros.
 rewrite (IHn k); auto with zarith.
 rewrite (IHn (S k)); auto with zarith.
 Save.
 
-Lemma comb_Sn_n : forall n, (comb (S n) n)=0%nat.
+Lemma comb_Sn_n : forall n, comb (S n) n =0%nat.
 intro; apply comb_not_le; auto.
 Save.
 
@@ -252,7 +281,7 @@ Save.
 
 Lemma comb_1_Sn : forall n, comb 1 (S n) = (S n).
 induction n; auto.
-replace (comb 1 (S (S n))) with (((comb 0 (S n))+(comb 1 (S n)))%nat); auto.
+replace (comb 1 (S (S n))) with ((comb 0 (S n)+comb 1 (S n))%nat); auto.
 rewrite comb_0_n; omega.
 Save.
 
@@ -421,12 +450,14 @@ Hint Resolve Nmult_comb.
 
 Definition qk (k n:nat) : U := if eq_nat_dec k n then 1 else 0.
 
-Fixpoint binomial (p:U)(n:nat) {struct n}: (distr nat) := 
+(** *** Definition of binomial distribution *)
+Fixpoint binomial (p:U)(n:nat) {struct n}: distr nat := 
     match n with O => (Munit O)
                      | S m => Mlet (binomial p m) 
-                                     (fun x => Mif (bernouilli p) (Munit (S x)) (Munit x))
+                                     (fun x => Mif (bernoulli p) (Munit (S x)) (Munit x))
     end.
 
+(** *** Properties of binomial distribution *)
 Lemma binomial_eq_k : 
    forall p n k, mu (binomial p n) (qk k) == fc p n k.
 induction n; intros.
@@ -439,7 +470,7 @@ simpl mu.
 apply Ueq_trans with 
 (star (mu (binomial p n))
   (fun x : nat =>
-   star (mu (bernouilli p))
+   star (mu (bernoulli p))
      (fun x0 : bool => mu (if x0 then Munit (S x) else Munit x))) (qk k));
 auto.
 unfold star.
@@ -447,7 +478,7 @@ apply Ueq_trans with
  (mu (binomial p n)
   (fun x : nat => p * (qk k (S x)) + ([1-]p) * (qk k x))).
 apply mu_stable_eq; red; intros.
-rewrite bernouilli_eq; unfold Munit; simpl; auto.
+rewrite bernoulli_eq; unfold Munit; simpl; auto.
 destruct k.
 (* case k = 0 *)
 apply Ueq_trans with (mu (binomial p n) (fun x => [1-] p * qk 0 x)).
@@ -475,4 +506,4 @@ rewrite IHn.
 rewrite fcp_S; auto.
 Save.
 
-End Bernouilli.
+End Bernoulli.

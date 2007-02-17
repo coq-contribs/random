@@ -46,7 +46,7 @@ OPT=
 COQFLAGS=-q $(OPT) $(COQLIBS) $(OTHERFLAGS) $(COQ_XML)
 COQC=$(COQBIN)coqc
 GALLINA=gallina
-COQDOC=coqdoc
+COQDOC=$(COQBIN)coqdoc
 CAMLC=ocamlc -c
 CAMLOPTC=ocamlopt -c
 CAMLLINK=ocamlc
@@ -80,7 +80,10 @@ VFILES=Prelude.v\
   IterFlip.v\
   Choice.v\
   Nelist.v\
-  Bernouilli.v\
+  Sets.v\
+  Carac.v\
+  Bernoulli.v\
+  Ycart.v\
   Transitions.v
 VOFILES=$(VFILES:.v=.vo)
 VIFILES=$(VFILES:.v=.vi)
@@ -97,7 +100,10 @@ all: Prelude.vo\
   IterFlip.vo\
   Choice.vo\
   Nelist.vo\
-  Bernouilli.vo\
+  Sets.vo\
+  Carac.vo\
+  Bernoulli.vo\
+  Ycart.vo\
   Transitions.vo
 
 spec: $(VIFILES)
