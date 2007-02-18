@@ -1,19 +1,3 @@
-(* This program is free software; you can redistribute it and/or      *)
-(* modify it under the terms of the GNU Lesser General Public License *)
-(* as published by the Free Software Foundation; either version 2.1   *)
-(* of the License, or (at your option) any later version.             *)
-(*                                                                    *)
-(* This program is distributed in the hope that it will be useful,    *)
-(* but WITHOUT ANY WARRANTY; without even the implied warranty of     *)
-(* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      *)
-(* GNU General Public License for more details.                       *)
-(*                                                                    *)
-(* You should have received a copy of the GNU Lesser General Public   *)
-(* License along with this program; if not, write to the Free         *)
-(* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA *)
-(* 02110-1301 USA                                                     *)
-
-
 Set Implicit Arguments.
 
 (** * Preliminaries *)
@@ -42,19 +26,19 @@ Definition decr_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A)
 
 (** ** Reducing if constructs *)
 
-Lemma if_then : forall (P:Prop) (b:{P}+{~P})(A:Type)(p q:A),P->(if b then p else q) =p.
+Lemma if_then : forall (P:Prop) (b:{P}+{ ~P})(A:Type)(p q:A), P -> (if b then p else q) =p.
 destruct b; simpl; intuition.
 Save.
 
-Lemma if_else : forall (P:Prop) (b:{P}+{~P})(A:Type)(p q:A),~P->(if b then p else q) =q.
+Lemma if_else : forall (P:Prop) (b:{P}+{ ~P})(A:Type)(p q:A), ~P -> (if b then p else q) =q.
 destruct b; simpl; intuition.
 Save.
 
 (** ** Classical reasoning *)
 
-Definition class (A:Prop) := ~ ~ A -> A.
+Definition class (A:Prop) := ~ ~A -> A.
 
-Lemma class_neg : forall A:Prop, class (~A).
+Lemma class_neg : forall A:Prop, class ( ~ A).
 unfold class; intuition.
 Save.
 
@@ -63,13 +47,13 @@ unfold class; intuition.
 Save.
 Hint Resolve class_neg class_false.
 
-Definition orc (A B:Prop) := forall C:Prop, class C -> (A ->C)->(B->C)->C.
+Definition orc (A B:Prop) := forall C:Prop, class C -> (A ->C) -> (B->C) -> C.
 
-Lemma orc_left : forall A B:Prop, A -> (orc A B).
+Lemma orc_left : forall A B:Prop, A -> orc A B.
 red;intuition.
 Save.
 
-Lemma orc_right : forall A B:Prop, B -> (orc A B).
+Lemma orc_right : forall A B:Prop, B -> orc A B.
 red;intuition.
 Save.
 
@@ -82,14 +66,50 @@ apply H; red; intro.
 apply H3; apply H4; auto.
 Save.
 
+Implicit Arguments class_orc [].
+
+Lemma orc_intro : forall A B, ( ~A -> ~B -> False) -> orc A B.
+intros; apply class_orc; red; intros.
+apply H; red; auto.
+Save.
+
 Lemma class_and : forall A B, class A -> class B -> class (A /\ B).
 unfold class; intuition.
 Save.
 
-Lemma excluded_middle : forall A, orc A (~A).
+Lemma excluded_middle : forall A, orc A ( ~A).
 red; intros.
 apply H; red; intro.
 intuition.
 Save.
 
-Hint Resolve class_orc class_and excluded_middle.
+Definition exc (A :Type)(P:A->Prop) := 
+   forall C:Prop, class C -> (forall x:A, P x ->C) -> C.
+
+Lemma exc_intro : forall (A :Type)(P:A->Prop) (x:A), P x -> exc P.
+red;firstorder.
+Save.
+
+Lemma class_exc : forall (A :Type)(P:A->Prop), class (exc P).
+repeat red; intros.
+apply H0; clear H0; red; intro.
+apply H; clear H; red; intro H2. 
+apply H2; intros; auto.
+apply H0; apply (H1 x); auto.
+Save.
+
+Lemma exc_intro_class : forall (A:Type) (P:A->Prop), ((forall x, ~P x) -> False) -> exc P.
+intros; apply class_exc; red; intros.
+apply H; red; intros; auto.
+apply H0; apply exc_intro with (x:=x);auto.
+Save.
+
+Lemma not_and_elim_left : forall A B, ~ (A /\ B) -> A -> ~B.
+intuition.
+Save.
+
+Lemma not_and_elim_right : forall A B, ~ (A /\ B) -> B -> ~A.
+intuition.
+Save.
+
+Hint Resolve class_orc class_and class_exc excluded_middle.

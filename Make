@@ -7,5 +7,8 @@ Prog.v
 IterFlip.v
 Choice.v
 Nelist.v
-Bernouilli.v
+Sets.v
+Carac.v
+Bernoulli.v
+Ycart.v
 Transitions.v

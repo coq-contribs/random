@@ -16,8 +16,14 @@ Choice.vo: Choice.v Prog.vo
 Choice.vi: Choice.v Prog.vo
 Nelist.vo: Nelist.v
 Nelist.vi: Nelist.v
-Bernouilli.vo: Bernouilli.v Prog.vo Prelude.vo
-Bernouilli.vi: Bernouilli.v Prog.vo Prelude.vo
+Sets.vo: Sets.v
+Sets.vi: Sets.v
+Carac.vo: Carac.v Prog.vo Sets.vo
+Carac.vi: Carac.v Prog.vo Sets.vo
+Bernoulli.vo: Bernoulli.v Prog.vo Prelude.vo
+Bernoulli.vi: Bernoulli.v Prog.vo Prelude.vo
+Ycart.vo: Ycart.v Carac.vo
+Ycart.vi: Ycart.v Carac.vo
 Transitions.vo: Transitions.v Prog.vo Nelist.vo
 Transitions.vi: Transitions.v Prog.vo Nelist.vo
 Prelude.html: Prelude.v
@@ -29,5 +35,8 @@ Prog.html: Prog.v Probas.html
 IterFlip.html: IterFlip.v Prog.html
 Choice.html: Choice.v Prog.html
 Nelist.html: Nelist.v
-Bernouilli.html: Bernouilli.v Prog.html Prelude.html
+Sets.html: Sets.v
+Carac.html: Carac.v Prog.html Sets.html
+Bernoulli.html: Bernoulli.v Prog.html Prelude.html
+Ycart.html: Ycart.v Carac.html
 Transitions.html: Transitions.v Prog.html Nelist.html
