@@ -1,8 +1,8 @@
 (** * Uprop.v : Properties of operators on [[0,1]] *)
 Set Implicit Arguments.
-Require Export Ubase.
 Require Export Arith.
 Require Export Omega.
+Require Export Ubase.
 Module Univ_prop (Univ:Universe).
 Import Univ.
 
@@ -204,7 +204,7 @@ Save.
 Hint Immediate Ult_neq Ult_neq_rev Ult_le.
 Hint Resolve Ule_diff_lt.
 
-Lemma Ult_neq_zero : forall x, ~0 == x -> 0 < x.
+Lemma Ult_neq_zero : forall x, ~(0==x) -> 0 < x.
 auto.
 Save.
 
@@ -446,12 +446,12 @@ Save.
 Hint Resolve Ult_0_1 Ult_antirefl.
 
 
-Lemma Uplus_neq_zero_left : forall x y, ~0 == x -> ~0 == x+y.
+Lemma Uplus_neq_zero_left : forall x y, ~(0 == x) -> ~(0 == x+y).
 intros; apply Ult_neq.
 apply Ult_le_trans with x; auto.
 Save.
 
-Lemma Uplus_neq_zero_right : forall x y, ~0 == y -> ~0 == x+y.
+Lemma Uplus_neq_zero_right : forall x y, ~(0 == y) -> ~(0 == x+y).
 intros; apply Ult_neq.
 apply Ult_le_trans with y; auto.
 Save.
@@ -537,62 +537,62 @@ Hint Resolve Uplus_eq_zero Umult_zero_right.
 
 (** *** Compatibility of operations with respect to order. *)
 
-Lemma Umult_le_simpl_right : forall x y z, ~0 == z -> (x * z) <= (y * z) -> x <= y.
+Lemma Umult_le_simpl_right : forall x y z, ~(0 == z) -> (x * z) <= (y * z) -> x <= y.
 intros; apply Umult_le_simpl_left with z; auto.
 setoid_rewrite (Umult_sym z x); 
 setoid_rewrite (Umult_sym z y);trivial.
 Save.
 Hint Resolve Umult_le_simpl_right.
 
-Lemma Umult_simpl_right : forall x y z, ~0 == z -> (x * z) == (y * z) -> x == y.
+Lemma Umult_simpl_right : forall x y z, ~(0 == z) -> (x * z) == (y * z) -> x == y.
 intros; apply Ule_antisym; auto.
 apply Umult_le_simpl_right with z; auto.
 apply Umult_le_simpl_right with z; auto.
 Save.
 
-Lemma Umult_simpl_left : forall x y z, ~0 == x -> (x * y) == (x * z) -> y == z.
+Lemma Umult_simpl_left : forall x y z, ~(0 == x) -> (x * y) == (x * z) -> y == z.
 intros; apply Ule_antisym; auto.
 apply Umult_le_simpl_left with x; auto.
 apply Umult_le_simpl_left with x; auto.
 Save.
 
-Lemma Umult_lt_compat_left : forall x y z, ~0 == z-> x < y -> (x * z) < (y * z).
+Lemma Umult_lt_compat_left : forall x y z, ~(0 == z)-> x < y -> (x * z) < (y * z).
 unfold Ult,not;intros.
 apply H0; apply Umult_le_simpl_right with z; auto.
 Save.
 
-Lemma Umult_lt_compat_right : forall x y z, ~0 == z -> x < y -> (z * x) < (z * y).
+Lemma Umult_lt_compat_right : forall x y z, ~(0 == z) -> x < y -> (z * x) < (z * y).
 unfold Ult,not;intros.
 apply H0; apply Umult_le_simpl_left with z; auto.
 Save.
 
 
-Lemma Umult_lt_simpl_right : forall x y z, ~0 == z -> (x * z) < (y * z) -> x < y.
+Lemma Umult_lt_simpl_right : forall x y z, ~(0 == z) -> (x * z) < (y * z) -> x < y.
 unfold Ult,not;intros.
 apply H0; auto.
 Save.
 
-Lemma Umult_lt_simpl_left : forall x y z, ~0 == z -> (z * x) < (z * y) -> x < y.
+Lemma Umult_lt_simpl_left : forall x y z, ~(0 == z) -> (z * x) < (z * y) -> x < y.
 unfold Ult,not;intros.
 apply H0; auto.
 Save.
 
 Hint Resolve Umult_lt_compat_left Umult_lt_compat_right.
 
-Lemma Umult_zero_simpl_right : forall x y, 0 == x*y -> ~0 == x -> 0 == y.
+Lemma Umult_zero_simpl_right : forall x y, 0 == x*y -> ~(0 == x) -> (0 == y).
 intros.
 apply Umult_simpl_left with x; auto.
 rewrite (Umult_zero_right x); trivial.
 Save.
 
-Lemma Umult_zero_simpl_left : forall x y, 0 == x*y -> ~0 == y -> 0 == x.
+Lemma Umult_zero_simpl_left : forall x y, 0 == x*y -> ~(0 == y) -> 0 == x.
 intros.
 apply Umult_simpl_right with y; auto.
 rewrite (Umult_zero_left y); trivial.
 Save.
 
 
-Lemma Umult_neq_zero : forall x y, ~0 == x -> ~0 == y -> ~0 == x*y.
+Lemma Umult_neq_zero : forall x y, ~(0 == x) -> ~(0 == y) -> ~(0 == x*y).
 red; intros.
 apply H0; apply Umult_zero_simpl_right with x; trivial.
 Save.
@@ -1267,7 +1267,7 @@ setoid_rewrite <- H; auto.
 setoid_rewrite (Uinv_inv ([1-] x + y)); auto.
 Save.
 
-Lemma Uminus_lt_non_zero : forall x y, x < y -> ~0 == y - x.
+Lemma Uminus_lt_non_zero : forall x y, x < y -> ~(0 == y - x).
 red; intros.
 apply H; auto.
 apply Uminus_zero_le; auto.
@@ -2805,7 +2805,7 @@ omega.
 rewrite (plus_Nmult_distr (S n - S k) (S O) ([1/]1+n)); auto.
 Save.
 
-Lemma Nmult_neq_zero : forall n x, ~0==x -> ~0==S n */ x.
+Lemma Nmult_neq_zero : forall n x, ~(0==x) -> ~(0==S n */ x).
 intros; rewrite (Nmult_S n x); auto.
 apply Uplus_neq_zero_left; trivial.
 Save.

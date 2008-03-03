@@ -55,7 +55,7 @@ Hint Resolve p_le.
 Lemma lim_p_one : 1 <= lub p.
 apply Ule_lt_lim; intros.
 assert (exc (fun n : nat => t <= [1-] ([1/]1+n))).
-assert (~0==[1-] t).
+assert (~(0==[1-] t)).
 red; intro; apply H; auto.
 apply Ule_trans with ([1-] 0); auto.
 apply (archimedian H0); auto; intros m H1.
