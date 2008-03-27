@@ -84,8 +84,8 @@ setoid_replace (m f) with (m (fminus f g) + m g); auto.
 apply Ueq_sym; apply Uplus_minus_simpl_right.
 apply Ule_trans with ([1-](m (finv g))); auto.
 rewrite <- (splus (fminus f g)  g).
-repeat red; intros; auto.
 apply (monotonic_stable_eq smon); auto; repeat red; unfold fplus; intros; auto.
+repeat red; intros; auto.
 Save.
 
 Hint Resolve stable_minus_distr.
@@ -113,8 +113,8 @@ intros A m splus sinv smon; intros.
 apply Ule_trans with (m (fplus (fminus f (fesp f g)) g)).
 apply smon; unfold fle,fplus,fminus,fesp; intros; auto. 
 rewrite (splus (fminus f (fesp f g)) g).
-repeat red; unfold fminus,fesp,finv; auto.
 Usimpl; auto.
+repeat red; unfold fminus,fesp,finv; auto.
 Save.
 Hint Resolve le_plus_distr.
 

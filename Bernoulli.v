@@ -238,11 +238,11 @@ unfold feq,qtrue,qfalse,B2U,NB2U.
 destruct x; repeat Usimpl; auto.
 rewrite (mu_stable_plus (bernoulli p) (f:=fun b => f true * qtrue p b) 
                                                           (g:=fun b => f false * qfalse p b)).
-repeat red; unfold fle,finv,qtrue,qfalse,B2U,NB2U; destruct x; repeat Usimpl; auto.
 rewrite (mu_stable_mult (bernoulli p) (f true) (qtrue p)).
 rewrite (mu_stable_mult (bernoulli p) (f false) (qfalse p)).
 rewrite bernoulli_eq_true; rewrite bernoulli_eq_false.
 apply Uplus_eq_compat; auto.
+repeat red; unfold fle,finv,qtrue,qfalse,B2U,NB2U; destruct x; repeat Usimpl; auto.
 Save.
 
 Lemma bernoulli_total : forall p , mu (bernoulli p) (f_one bool)==1.
@@ -323,7 +323,7 @@ unfold fc; intros; rewrite comb_not_le; auto.
 Save.
 
 Lemma fc0 : forall n k, fc 0 n (S k) == 0.
-intros; unfold fc; repeat Usimpl; auto.
+intros; unfold fc; simpl; repeat Usimpl; auto.
 Save.
 Hint Resolve fc0.
 
@@ -367,7 +367,7 @@ intros p n k Heq; destruct k.
 rewrite comb_0_n; auto.
 apply (Ueq_orc p 0); intros; auto.
 (* case p == 0 *)
-rewrite H; repeat Usimpl; auto.
+rewrite H; simpl; repeat Usimpl; auto.
 (* case p <> 0 *)
 assert (Hk:(S k < n \/n=S k\/ n < S k)%nat); try omega.
 decompose sum Hk; clear Hk; intros.
@@ -394,14 +394,14 @@ rewrite <- Umult_assoc.
 rewrite Nmult_Umult_assoc_right; auto.
 repeat Usimpl.
 rewrite <- Nmult_Umult_assoc_right; auto.
-exact (fc_Nmult_def p n (S k) H).
-apply Nmult_eq_compat.
+apply Nmult_eq_compat; trivial.
 repeat rewrite  Umult_assoc.
 rewrite (Umult_sym ([1-]p) p).
 rewrite <-  (Umult_assoc p ([1-]p)).
 rewrite (Umult_sym ([1-]p) (p^k)); auto.
 repeat rewrite  <- Umult_assoc; auto.
 replace (n-k)%nat with (S (n-S k)); auto; omega.
+exact (fc_Nmult_def p n (S k) H).
 subst; repeat rewrite fcp_n.
 rewrite fcp_not_le; repeat Usimpl; auto.
 repeat (rewrite fcp_not_le; auto with arith).
@@ -421,7 +421,7 @@ apply (Ueq_orc p 0); intros; auto.
 (* case p == 0 *)
 rewrite sigma_S_lift.
 rewrite fcp_0; rewrite sigma_zero; intros;
-rewrite H; repeat Usimpl; auto.
+rewrite H; simpl; repeat Usimpl; auto.
 (* case p <> 0 *)
 assert (Hr:retract (fc p n) (S n)); auto.
 (* main property *)
@@ -495,15 +495,15 @@ case (eq_nat_dec k x); intro.
 rewrite if_then; auto.
 rewrite if_else; auto.
 rewrite (mu_stable_plus (binomial p n) (f:=fun x : nat => p * qk k x) (g:=fun x : nat => [1-] p * qk (S k) x)).
-(* fplusok *)
-repeat red; unfold finv,qk; intros.
-case (eq_nat_dec k x); intro; auto.
 (* *)
 rewrite (mu_stable_mult (binomial p n) p (qk k)).
 rewrite (mu_stable_mult (binomial p n) ([1-]p) (qk (S k))).
 rewrite IHn.
 rewrite IHn.
 rewrite fcp_S; auto.
+(* fplusok *)
+repeat red; unfold finv,qk; intros.
+case (eq_nat_dec k x); intro; auto.
 Save.
 
 End Bernoulli.

@@ -97,8 +97,8 @@ unfold p; intros.
 apply Ueq_trans with (sigma (fun k => P x k - P x (S k)) n).
 apply sigma_eq_compat; intros; auto.
 rewrite sigma_minus_decr.
-unfold P; auto.
 unfold P; rewrite prod_0; auto.
+unfold P; auto.
 Save.
 Hint Resolve p_diff.
 
@@ -117,10 +117,6 @@ unfold P at 1; rewrite prod_0; Usimpl.
 apply Uplus_eq_compat.
 replace ((x+0)%nat) with x; auto.
 rewrite <- sigma_mult; auto.
-red; intros.
-apply Ule_trans with (P (S x) k); auto.
-change (P (S x) k <= [1-]p (S x) k).
-rewrite p_diff; auto.
 apply sigma_eq_compat; intros; auto.
 unfold P; rewrite prod_S_lift.
 rewrite Umult_assoc.
@@ -134,6 +130,10 @@ omega.
 apply prod_eq_compat; intro; auto.
 replace ((x + S k0)%nat) with ((S x + k0)%nat); auto.
 omega.
+red; intros.
+apply Ule_trans with (P (S x) k); auto.
+change (P (S x) k <= [1-]p (S x) k).
+rewrite p_diff; auto.
 Save.
 Hint Resolve p_equation.
 

@@ -259,10 +259,9 @@ repeat Usimpl; auto.
 assert (incl Q P).
 apply incl_trans with (add x Q); auto.
 rewrite Udistr_plus_left; auto.
-apply H; auto.
-case (e x); intuition.
 rewrite IHFP; auto.
 apply retract_fin_incl with P; auto.
+case (e x); intuition.
 Save.
 
 Lemma sigma_fin_plus : forall (f g: A -> U) (P:A->Prop)(FP:finite P),
@@ -391,12 +390,6 @@ apply incl_trans with (rem x0 Q0); auto.
 rewrite incl_rem_add_iff; auto.
 (* Case x<>x0 *)
 rewrite (sigma_fin_rem f FQ x); auto.
-assert (P x).
-red in e; rewrite e; auto.
-assert (Q0 x);auto.
-assert (Q1 x);auto.
-case (e0 x); intuition.
-case H4; intuition.
 repeat norm_assoc_left.
 rewrite (Uplus_sym (f x0) (f x)).
 repeat norm_assoc_right.
@@ -412,6 +405,12 @@ subst; intuition.
 case (decA x1 x0); intuition; subst; intuition.
 case (decA x1 x); intuition; subst; intuition.
 exact (IHFP (add x0 (rem x Q1)) (fin_eq_add H3 (finite_rem decA x FQ) (equiv_refl (add x0 (rem x Q1)))) H0).
+assert (P x).
+red in e; rewrite e; auto.
+assert (Q0 x);auto.
+assert (Q1 x);auto.
+case (e0 x); intuition.
+case H4; intuition.
 Save.
 
 Lemma sigma_fin_unique : forall f P Q (FP:finite P) (FQ:finite Q), (equiv P Q) -> sigma_fin f FP == sigma_fin f FQ.

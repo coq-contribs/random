@@ -68,8 +68,8 @@ intros; apply Ule_trans with (mu m (fplus (fminus f (fesp f g)) g)).
 apply mu_monotonic.
 unfold fle,fplus,fminus,fesp; intros; auto. 
 rewrite (mu_stable_plus m (f:=fminus f (fesp f g)) (g:=g)).
-repeat red; unfold fminus,fesp,finv; auto.
 Usimpl; auto.
+repeat red; unfold fminus,fesp,finv; auto.
 Save.
 Hint Resolve mu_le_plus.
 
@@ -120,8 +120,8 @@ apply (mu_stable_inv m g); auto.
 apply Uinv_le_compat.
 apply (mu_monotonic m); red; intros; auto.
 rewrite <- (mu_stable_plus m (f:=fun x : A => f x - g x)  (g:=g)).
-repeat red; intros; unfold finv; auto.
 apply (mu_stable_eq m); repeat red; unfold fplus; intros; auto.
+repeat red; intros; unfold finv; auto.
 Save.
 
 Lemma mu_inv_minus : 
@@ -236,7 +236,7 @@ Save.
 Hint Resolve le_distr_refl.
 Hint Unfold le_distr.
 
-Add Setoid distr eq_distr distr_setoid as Distr_Setoid. 
+Add Setoid (@distr A) (@eq_distr A) (@distr_setoid A) as Distr_Setoid. 
 
 Lemma Munit_compat : forall A (x y : A), x=y -> eq_distr (Munit x) (Munit y).
 intros; subst; auto.

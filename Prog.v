@@ -220,10 +220,10 @@ apply lub_le_stable; intro.
 apply (Fn_continuous n dn dnmon x f).
 unfold dn; simpl; unfold mu_lub_,Flift.
 rewrite (double_lub_simpl (fun n m => mu (Fn n (fun y : A => iter (Fn m) k y) x) f)); auto.
-intros; apply (@Fn_incr (fun y : A => iter (Fn m) k y) x n (S n)); auto with arith.
-intros; apply (@Fn_mon n (fun y : A => iter (Fn m) k y) (fun y : A => iter (Fn (S m)) k y)); auto.
 apply lub_le_stable; intro.
 apply (@Fn_mon n (fun y : A => iter (Fn n) k y) (iter (Fn n) k)); auto.
+intros; apply (@Fn_incr (fun y : A => iter (Fn m) k y) x n (S n)); auto with arith.
+intros; apply (@Fn_mon n (fun y : A => iter (Fn m) k y) (fun y : A => iter (Fn (S m)) k y)); auto.
 Save.
 Hint Resolve iter_continuous.
 

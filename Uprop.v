@@ -733,7 +733,7 @@ induction n; simpl; intros; auto.
 apply Ule_trans with (x * (y^n)); auto.
 Save.
 
-Add Morphism Uexp with signature Ueq ==> eq ==> Ueq as Uexp_eq_compat.
+Add Morphism Uexp with signature Ueq ==> (@eq nat) ==> Ueq as Uexp_eq_compat.
 intros; apply Ule_antisym; apply Uexp_Ule_compat; auto.
 Save.
 
@@ -1433,9 +1433,9 @@ intros f n fmon;induction n; simpl.
 rewrite sigma_0; auto.
 rewrite sigma_S; rewrite IHn.
 rewrite Uplus_minus_assoc_right; auto.
+rewrite Uminus_plus_simpl; auto.
 elim n; intros; auto.
 apply Ule_trans with (f n0); auto.
-rewrite Uminus_plus_simpl; auto.
 Save.
 
 Definition sigma_inf (f : nat -> U) : U := lub (sigma f).
@@ -2107,7 +2107,7 @@ split; auto.
 exact (@feq_trans A).
 Save.
 
-Add Setoid (fun A => A->U) feq fSetoid as f_Setoid.
+Add Setoid (A->U) (@feq _) (@fSetoid _) as f_Setoid.
 
 Lemma feq_fle : forall (A:Type) (f g : A->U), feq f g -> fle f g.
 auto.
@@ -2130,8 +2130,8 @@ Lemma fle_trans : forall (A:Type) (f g h : A->U), fle f g -> fle g h -> fle f h.
 unfold fle; intros; apply Ule_trans with (g x); auto.
 Save.
 
-Add Relation (fun (A:Type) => A->U) fle 
-   reflexivity proved by fle_refl transitivity proved by fle_trans  as fle_Relation.
+Add Relation (A->U) (@fle A) 
+   reflexivity proved by (@fle_refl A) transitivity proved by (@fle_trans A) as fle_Relation.
 
 Lemma fle_feq_trans : forall (A:Type) (f g h : A->U), fle f g -> feq g h -> fle f h.
 unfold fle; intros; apply Ule_trans with (g x); auto.
@@ -2146,12 +2146,12 @@ auto.
 Save.
 Hint Resolve fle_antisym.
 
-Add Morphism fle with signature  feq ==> feq ==> iff as  fle_feq_compat. 
+Add Morphism (@fle A) with signature  (@feq A) ==> (@feq A) ==> iff as  fle_feq_compat. 
 split; intros.
-apply feq_fle_trans with x1; auto.
+apply feq_fle_trans with x; auto.
 apply fle_feq_trans with x0; auto.
-apply feq_fle_trans with x2; auto.
-apply fle_feq_trans with x3; auto.
+apply feq_fle_trans with y; auto.
+apply fle_feq_trans with y0; auto.
 Save.
 
 Lemma fle_fplus_left : forall (A:Type) (f g : A->U), fle f (fplus f g).
@@ -2188,44 +2188,44 @@ Save.
 
 (** *** Defining morphisms *)
 
-Add Morphism fplus with signature feq ==> feq ==> feq as fplus_feq_compat.
+Add Morphism (@fplus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fplus_feq_compat.
 unfold feq,fplus; auto.
 Save.
 
-Add Morphism fplus with signature fle ++> fle ++> fle as fplus_fle_compat.
+Add Morphism (@fplus A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fplus_fle_compat.
 unfold fle,fplus; auto.
 Save.
 
-Add Morphism finv with signature feq ==> feq as finv_feq_compat.
+Add Morphism (@finv A) with signature (@feq A) ==> (@feq A) as finv_feq_compat.
 unfold feq,finv; auto.
 Save.
 
-Add Morphism finv with signature fle --> fle as finv_fle_compat.
+Add Morphism (@finv A) with signature (@fle A) --> (@fle A) as finv_fle_compat.
 unfold fle,finv; auto.
 Save.
 
-Add Morphism fmult with signature Ueq ==> feq ==> feq as fmult_feq_compat.
+Add Morphism (@fmult A) with signature Ueq ==> (@feq A) ==> (@feq A) as fmult_feq_compat.
 unfold feq,fmult; auto.
 Save.
 
-Add Morphism fmult with signature Ule ++> fle ++> fle as fmult_fle_compat.
+Add Morphism (@fmult A) with signature Ule ++> (@fle A) ++> (@fle A) as fmult_fle_compat.
 unfold fle,fmult; auto.
 Save.
 
-Add Morphism fminus with signature feq ==> feq ==> feq as fminus_feq_compat.
+Add Morphism (@fminus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fminus_feq_compat.
 unfold feq,fminus; auto.
 Save.
 
-Add Morphism fminus with signature fle ++> fle --> fle as fminus_fle_compat.
+Add Morphism (@fminus A) with signature (@fle A) ++> (@fle A) --> (@fle A) as fminus_fle_compat.
 unfold fle,fminus; auto.
 Save.
 
 
-Add Morphism fesp with signature feq ==> feq ==> feq as fesp_feq_compat.
+Add Morphism (@fesp A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fesp_feq_compat.
 unfold feq,fesp; auto.
 Save.
 
-Add Morphism fesp with signature fle ++> fle ++> fle as fesp_fle_compat.
+Add Morphism (@fesp A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fesp_fle_compat.
 unfold fle,fesp; auto.
 Save.
 
@@ -2616,10 +2616,10 @@ unfold class; destruct n; intuition.
 Save.
 Hint Resolve Nmult_def_class.
 
-Add Morphism Nmult_def with signature eq ==> Ueq ==> iff as Nmult_def_eq_compat.
+Add Morphism Nmult_def with signature (@eq _) ==> Ueq ==> iff as Nmult_def_eq_compat.
 
 Infix "*/" := Nmult (at level 60) : U_scope.
-unfold Nmult_def; destruct x; intuition.
+unfold Nmult_def; destruct y; intuition.
 rewrite <- H; auto.
 rewrite H; auto.
 Save.
@@ -2658,7 +2658,7 @@ Save.
 
 Hint Resolve Nmult_1 Nmult_SS Nmult_2 Nmult_S.
 
-Add Morphism Nmult with signature eq ==> Ueq ==> Ueq as Nmult_eq_compat.
+Add Morphism Nmult with signature (@eq _) ==> Ueq ==> Ueq as Nmult_eq_compat.
 intros n x1 x2 eq1; induction n; simpl; auto; intros.
 destruct n; repeat rewrite Nmult_SS; trivial.
 apply Uplus_eq_compat; auto.
@@ -2843,12 +2843,11 @@ Lemma Nmult_Unth_eq :
 intros.
 apply Ueq_trans with ((n2 * S n1) */ ([1/]1+m1 * [1/]1+n1)).
 rewrite (Nmult_mult_assoc n2 (S n1) ([1/]1+m1 * [1/]1+n1)).
-apply Nmult_eq_compat.
+apply Nmult_eq_compat; trivial.
 rewrite (Nmult_Unth_simpl_right n1 ([1/]1+m1)); auto.
 rewrite H.
 rewrite (Nmult_mult_assoc m2 (S m1) ([1/]1+m1 * [1/]1+n1)).
-apply Nmult_eq_compat.
-rewrite (Nmult_Unth_simpl_left m1 ([1/]1+n1)); auto.
+apply Nmult_eq_compat; trivial.
 Save.
 
 Hint Resolve Nmult_Unth_le Nmult_Unth_eq.
@@ -2882,7 +2881,7 @@ Hint Resolve B2Uinv NB2Uinv.
 
 Definition pmin (p:U) (n:nat) :=  p - ([1/2]^n).
 
-Add Morphism pmin with signature Ueq ==> eq ==> Ueq as pmin_eq_compat.
+Add Morphism pmin with signature Ueq ==> (@eq _) ==> Ueq as pmin_eq_compat.
 unfold pmin; auto.
 Save.
 
