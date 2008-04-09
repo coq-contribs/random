@@ -43,7 +43,7 @@ Hint Immediate equiv_sym.
 
 (** ** Setoid structure *)
 Lemma set_setoid : Setoid_Theory set equiv.
-split; auto.
+split; red; auto.
 exact equiv_trans.
 Qed.
 

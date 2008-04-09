@@ -91,7 +91,7 @@ Hint Resolve Uinv_opp_right.
 (** ** [U] is a setoid *)
 
 Lemma Usetoid : Setoid_Theory U Ueq.
-split; auto.
+split; red ; auto.
 exact Ueq_trans.
 Qed.
 
@@ -2103,7 +2103,7 @@ unfold feq; intros; apply Ueq_trans with (g x); auto.
 Save.
 
 Lemma fSetoid : forall (A:Type), Setoid_Theory (A->U) (@feq A).
-split; auto.
+split; red; auto.
 exact (@feq_trans A).
 Save.
 

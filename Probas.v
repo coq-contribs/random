@@ -223,7 +223,7 @@ Hint Resolve eq_distr_refl.
 Hint Immediate eq_distr_sym.
 
 Lemma distr_setoid : forall (A:Type), Setoid_Theory  (distr A) (eq_distr (A:=A)).
-intros; constructor; auto.
+intros; constructor; red ; auto.
 exact (eq_distr_trans (A:=A)).
 Save.
 
