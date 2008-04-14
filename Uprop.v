@@ -2107,7 +2107,7 @@ split; red; auto.
 exact (@feq_trans A).
 Save.
 
-Add Setoid (A->U) (@feq _) (@fSetoid _) as f_Setoid.
+Add Parametric Setoid A : (A->U) (@feq A) (@fSetoid A) as f_Setoid.
 
 Lemma feq_fle : forall (A:Type) (f g : A->U), feq f g -> fle f g.
 auto.
@@ -2130,7 +2130,7 @@ Lemma fle_trans : forall (A:Type) (f g h : A->U), fle f g -> fle g h -> fle f h.
 unfold fle; intros; apply Ule_trans with (g x); auto.
 Save.
 
-Add Relation (A->U) (@fle A) 
+Add Parametric Relation A : (A->U) (@fle A) 
    reflexivity proved by (@fle_refl A) transitivity proved by (@fle_trans A) as fle_Relation.
 
 Lemma fle_feq_trans : forall (A:Type) (f g h : A->U), fle f g -> feq g h -> fle f h.
@@ -2146,7 +2146,7 @@ auto.
 Save.
 Hint Resolve fle_antisym.
 
-Add Morphism (@fle A) with signature  (@feq A) ==> (@feq A) ==> iff as  fle_feq_compat. 
+Add Parametric Morphism A : (@fle A) with signature  (@feq A) ==> (@feq A) ==> iff as  fle_feq_compat. 
 split; intros.
 apply feq_fle_trans with x; auto.
 apply fle_feq_trans with x0; auto.
@@ -2188,44 +2188,44 @@ Save.
 
 (** *** Defining morphisms *)
 
-Add Morphism (@fplus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fplus_feq_compat.
+Add Parametric Morphism A : (@fplus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fplus_feq_compat.
 unfold feq,fplus; auto.
 Save.
 
-Add Morphism (@fplus A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fplus_fle_compat.
+Add Parametric Morphism A : (@fplus A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fplus_fle_compat.
 unfold fle,fplus; auto.
 Save.
 
-Add Morphism (@finv A) with signature (@feq A) ==> (@feq A) as finv_feq_compat.
+Add Parametric Morphism A : (@finv A) with signature (@feq A) ==> (@feq A) as finv_feq_compat.
 unfold feq,finv; auto.
 Save.
 
-Add Morphism (@finv A) with signature (@fle A) --> (@fle A) as finv_fle_compat.
+Add Parametric Morphism A : (@finv A) with signature (@fle A) --> (@fle A) as finv_fle_compat.
 unfold fle,finv; auto.
 Save.
 
-Add Morphism (@fmult A) with signature Ueq ==> (@feq A) ==> (@feq A) as fmult_feq_compat.
+Add Parametric Morphism A : (@fmult A) with signature Ueq ==> (@feq A) ==> (@feq A) as fmult_feq_compat.
 unfold feq,fmult; auto.
 Save.
 
-Add Morphism (@fmult A) with signature Ule ++> (@fle A) ++> (@fle A) as fmult_fle_compat.
+Add Parametric Morphism A : (@fmult A) with signature Ule ++> (@fle A) ++> (@fle A) as fmult_fle_compat.
 unfold fle,fmult; auto.
 Save.
 
-Add Morphism (@fminus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fminus_feq_compat.
+Add Parametric Morphism A : (@fminus A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fminus_feq_compat.
 unfold feq,fminus; auto.
 Save.
 
-Add Morphism (@fminus A) with signature (@fle A) ++> (@fle A) --> (@fle A) as fminus_fle_compat.
+Add Parametric Morphism A : (@fminus A) with signature (@fle A) ++> (@fle A) --> (@fle A) as fminus_fle_compat.
 unfold fle,fminus; auto.
 Save.
 
 
-Add Morphism (@fesp A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fesp_feq_compat.
+Add Parametric Morphism A : (@fesp A) with signature (@feq A) ==> (@feq A) ==> (@feq A) as fesp_feq_compat.
 unfold feq,fesp; auto.
 Save.
 
-Add Morphism (@fesp A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fesp_fle_compat.
+Add Parametric Morphism A : (@fesp A) with signature (@fle A) ++> (@fle A) ++> (@fle A) as fesp_fle_compat.
 unfold fle,fesp; auto.
 Save.
 

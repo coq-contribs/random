@@ -236,7 +236,7 @@ Save.
 Hint Resolve le_distr_refl.
 Hint Unfold le_distr.
 
-Add Setoid (@distr A) (@eq_distr A) (@distr_setoid A) as Distr_Setoid. 
+Add Parametric Setoid A : (@distr A) (@eq_distr A) (@distr_setoid A) as Distr_Setoid. 
 
 Lemma Munit_compat : forall A (x y : A), x=y -> eq_distr (Munit x) (Munit y).
 intros; subst; auto.
