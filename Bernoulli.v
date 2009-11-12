@@ -327,7 +327,7 @@ intros; unfold fc; simpl; repeat Usimpl; auto.
 Save.
 Hint Resolve fc0.
 
-Add Morphism fc : fc_eq_compat.
+Add Morphism fc with signature Ueq ==> eq ==> eq ==> Ueq as fc_eq_compat.
 unfold fc; intros; rewrite H; auto.
 Save.
 
