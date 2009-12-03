@@ -92,7 +92,6 @@ Hint Resolve Uinv_opp_right.
 
 Lemma Usetoid : Setoid_Theory U Ueq.
 split; red ; auto.
-exact Ueq_trans.
 Qed.
 
 Add Setoid U Ueq Usetoid as U_setoid.
