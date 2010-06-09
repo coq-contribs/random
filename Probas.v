@@ -495,7 +495,7 @@ apply sigma_le_compat; auto.
 Save.
 
 Definition Random (n:nat) : (distr nat).
-intro n; exists (random n).
+exists (random n).
 apply random_stable_inv.
 apply random_stable_plus.
 apply random_stable_mult.
@@ -519,14 +519,14 @@ Record Ndistr (A:Type): Type :=
 Hint Resolve nu_monotonic nu_continuous nu_le_esp.
 
 Definition Nunit (A:Type) (x:A) : Ndistr A.
-intros A x; exists (unit x).
+exists (unit x).
 apply unit_monotonic.
 apply unit_continuous.
 red; auto.
 Defined.
 
 Definition Nlet (A B:Type)(n:Ndistr A) (N:A->Ndistr B): Ndistr B.
-intros; exists (star (nu n) (fun x => nu (N x))); auto.
+exists (star (nu n) (fun x => nu (N x))); auto.
 apply star_monotonic; auto.
 apply star_continuous; auto.
 red; unfold star; intros.
