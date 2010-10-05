@@ -112,8 +112,6 @@ apply muF_eq with
     (q:=fun (x:U) => B2U)
     (f:=fun (x:U) => x);intros; auto.
 unfold qinv; auto.
-red; intro; unfold qinv.
-apply Ule_trans with ([1-]x); auto.
 exact (Bern_term p).
 Save.
 
@@ -282,7 +280,6 @@ Save.
 Lemma comb_1_Sn : forall n, comb 1 (S n) = (S n).
 induction n; auto.
 replace (comb 1 (S (S n))) with ((comb 0 (S n)+comb 1 (S n))%nat); auto.
-rewrite comb_0_n; omega.
 Save.
 
 Lemma comb_inv : forall n k, (k<=n)%nat -> comb k n = comb (n-k) n.

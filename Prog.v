@@ -103,8 +103,6 @@ red; auto.
 unfold Flift, dn.
 intros; apply mu_lub_sup; intros.
 apply le_distr_trans with (iter (S n) x); auto.
-red; simpl; intros.
-apply F_mon; auto.
 apply mu_lub_le with (muf:=fun n0:nat => iter n0 x); auto.
 Save.
 
@@ -220,8 +218,6 @@ apply lub_le_stable; intro.
 apply (Fn_continuous n dn dnmon x f).
 unfold dn; simpl; unfold mu_lub_,Flift.
 rewrite (double_lub_simpl (fun n m => mu (Fn n (fun y : A => iter (Fn m) k y) x) f)); auto.
-apply lub_le_stable; intro.
-apply (@Fn_mon n (fun y : A => iter (Fn n) k y) (iter (Fn n) k)); auto.
 intros; apply (@Fn_incr (fun y : A => iter (Fn m) k y) x n (S n)); auto with arith.
 intros; apply (@Fn_mon n (fun y : A => iter (Fn m) k y) (fun y : A => iter (Fn (S m)) k y)); auto.
 Save.
@@ -774,21 +770,17 @@ Hint Resolve Imu_monotonic Imu_stable_eq.
 Lemma Imu_singl : forall (A:Type) (e:distr A) (f:A->U),
            Ieq (Imu e (fun x => singl (f x))) (singl (mu e f)).
 unfold Ieq,Imu,singl; simpl; intuition.
-apply mu_stable_eq; firstorder.
-apply mu_stable_eq; firstorder.
 Save.
 
 Lemma Imu_inf : forall (A:Type) (e:distr A) (f:A->U),
            Ieq (Imu e (fun x => inf (f x))) (inf (mu e f)).
 unfold Ieq,Imu,inf; simpl; intuition.
 exact (mu_zero e).
-apply mu_stable_eq; firstorder.
 Save.
 
 Lemma Imu_sup : forall (A:Type) (e:distr A) (f:A->U),
            Iincl (Imu e (fun x => sup (f x))) (sup (mu e f)).
 unfold Iincl,Imu,inf; simpl; intuition.
-apply mu_monotonic; firstorder.
 Save.
 
 Lemma Iin_mu_Imu : 

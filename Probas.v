@@ -267,7 +267,6 @@ Save.
 
 Lemma M_ext : forall (A:Type) (m:distr A), eq_distr (Mlet m (fun x => (Munit x))) m.
 red; intros; simpl;rewrite law2; trivial.
-apply (mu_stable_eq m (fun x:A => f x) f); auto.
 Save.
 
 Lemma Mcomp : forall (A B C:Type) (m1:(distr A)) (m2:A -> distr B) (m3:B -> distr C),
