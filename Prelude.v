@@ -1,3 +1,4 @@
+Global Set Asymmetric Patterns.
 Set Implicit Arguments.
 
 (** * Preliminaries *)
