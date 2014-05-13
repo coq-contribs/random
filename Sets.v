@@ -2,7 +2,7 @@ Global Set Asymmetric Patterns.
 Set Implicit Arguments.
 Set Strict Implicit.
 Require Export Setoid.
-Require Omega.
+Require Import Omega.
 
 (** * Sets.v: Definition of sets as predicates over a type A *)
 
