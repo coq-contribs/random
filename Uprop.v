@@ -1,5 +1,6 @@
 (** * Uprop.v : Properties of operators on [[0,1]] *)
 Set Implicit Arguments.
+Unset Standard Proposition Elimination Names.
 Require Export Arith.
 Require Export Omega.
 Require Export Ubase.

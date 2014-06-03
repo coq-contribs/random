@@ -1,6 +1,7 @@
 Global Set Asymmetric Patterns.
 Set Implicit Arguments.
 Set Strict Implicit.
+Unset Standard Proposition Elimination Names.
 Require Export Setoid.
 Require Import Omega.
 

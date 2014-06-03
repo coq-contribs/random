@@ -1,6 +1,7 @@
 (** * Carac.v: Characteristic functions *)
 Require Export Prog.
 Set Implicit Arguments.
+Unset Standard Proposition Elimination Names.
 Require Export Sets.
 Require Export Arith.
 Module CaracFun (Univ:Universe).
