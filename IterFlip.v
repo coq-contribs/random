@@ -1,6 +1,7 @@
 (** * IterFlip.v: An example of probabilistic termination *)
 
 Require Export Prog.
+Require ZArith.
 Set Implicit Arguments.
 
 Module IterFlip (Univ:Universe).
@@ -17,7 +18,7 @@ We interpret the probabilistic program
 <<
 let rec iter x = if flip() then iter (x+1) else x 
 >>*)
-Require Import ZArith.
+Import ZArith.
 
 Definition Fiter (f: Z -> (distr Z)) (x:Z) := Mif Flip (f (Zsucc x)) (Munit x).
 

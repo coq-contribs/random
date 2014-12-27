@@ -2,6 +2,7 @@
 
 
 Require Export Prog.
+Require Nelist.
 Set Implicit Arguments.
 
 Module PTS(Univ:Universe).
@@ -22,7 +23,7 @@ Variable A : Type.
 Variable step : A -> distr A.
 
 (** ** Extension to distributions on sequences of length k *)
-Require Export Nelist.
+Export Nelist.
 
 Definition add_step (start : distr (nelist A)) :  M (nelist A) := 
   fun f => mu start (fun l => (mu (step (hd l)) (fun x => (f (add x l))))).

@@ -2,6 +2,7 @@
 
 Require Export Uprop.
 Require Export Monads.
+Require Arith.
 Set Implicit Arguments.
 Module Proba (Univ:Universe).
 Module MP := (Monad Univ).
@@ -397,7 +398,6 @@ apply flip_monotonic.
 Defined.
 
 (** ** Uniform distribution beween 0 and n *)
-Require Arith.
 
 (** *** Definition of [fnth]
         [fnth n k] is defined as $\frac{1}{n+1}$ *)
