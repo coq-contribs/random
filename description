@@ -1,7 +1,7 @@
 Name: Random
 Title:Interpretation of random programs
 Author:Christine Paulin 
-Institution: INRIA Futurs, ProVal project & LRI, Université Paris Sud
+Institution: INRIA Futurs, ProVal project & LRI, UniversitÃ© Paris Sud
 
 Description: This contribution is a modelisation of random programs 
 as measures in Coq. It started in 2004 in the context 
