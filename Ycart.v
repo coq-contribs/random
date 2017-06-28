@@ -30,12 +30,12 @@ apply mu_stable_eq; red; auto.
 intros; unfold inf,carac.
 case (Ule_dec x 1); intros; auto.
 absurd (x<=1); auto.
-Save.
+Qed.
 
 Lemma uniform_inv_inf : forall a, mu uniform (finv (inf a)) == [1-] a.
 intros; rewrite inv_minus_distr; auto.
 rewrite uniform_inf; rewrite uniform_one; auto.
-Save.
+Qed.
 
 Hint Resolve uniform_inf uniform_inv_inf uniform_one.
 
@@ -58,7 +58,7 @@ Lemma FYcart_mon : forall f g : nat -> distr nat,
 unfold FYcart; intros; auto.
 apply Mlet_mon; intros; auto.
 case (Ule_dec x (F n)); auto.
-Save.
+Qed.
 
 Definition Ycart : nat -> distr nat := Mfix FYcart FYcart_mon.
 
@@ -81,7 +81,7 @@ rewrite (mu_stable_mult uniform (mu (f (S x)) q)).
 rewrite uniform_inf.
 apply Uplus_eq_compat; auto.
 rewrite uniform_inv_inf; auto.
-Save.
+Qed.
 
 Definition P (x k : nat) := prod (fun i => [1-]F (x+i)) k.
 
@@ -89,7 +89,7 @@ Definition p (x:nat) (n:nat) := sigma (fun k => F (x+k) * P x k) n.
 
 Lemma P_prod : forall x k, F (x+k) * P x k == P x k - P x (S k).
 intros; unfold P; rewrite prod_minus; auto.
-Save.
+Qed.
 Hint Resolve P_prod.
 
 Lemma p_diff : forall x n,  p x n == [1-] P x n.
@@ -99,7 +99,7 @@ apply sigma_eq_compat; intros; auto.
 rewrite sigma_minus_decr.
 unfold P; rewrite prod_0; auto.
 unfold P; auto.
-Save.
+Qed.
 Hint Resolve p_diff.
 
 Lemma p_lub : forall x, lub (p x) == [1-] prod_inf (fun i => [1-]F (x+i)).
@@ -107,7 +107,7 @@ unfold prod_inf; intros.
 apply Ueq_trans with (lub (fun n => [1-] P x n)).
 apply lub_eq_stable; auto.
 apply Ueq_trans with ([1-]glb (P x)); auto.
-Save.
+Qed.
 Hint Resolve p_lub.
 
 Lemma p_equation : forall x n,  p x (S n) == F x + [1-](F x) * p (S x) n.
@@ -134,7 +134,7 @@ red; intros.
 apply Ule_trans with (P (S x) k); auto.
 change (P (S x) k <= [1-]p (S x) k).
 rewrite p_diff; auto.
-Save.
+Qed.
 Hint Resolve p_equation.
 
 Lemma Ycart_term1 : forall x, mu (Ycart x) (f_one nat) == [1-] prod_inf (fun i => [1-]F (x+i)).
@@ -156,7 +156,7 @@ apply Ule_trans with (F x0 + [1-] F x0 * p (S x0) i).
 rewrite p_equation; auto.
 repeat Usimpl; auto.
 apply (H (S x0)).
-Save.
+Qed.
 
 (** A  shorter proof using mu (Ycart x) (f_one nat) = mu h. muYcart h x *)
 
@@ -171,7 +171,7 @@ unfold mufix.
 apply lub_eq_stable.
 intro n; generalize x; induction n; simpl; intros; auto.
 rewrite IHn; auto.
-Save.
+Qed.
 
 Lemma le_dec : forall x, dec (fun y => le y x).
 intros x y; case (le_lt_dec y x); auto with arith.
@@ -193,7 +193,7 @@ rewrite carac_zero; auto with arith.
 repeat Usimpl.
 apply mu_monotonic; apply carac_incl; red; auto with arith.
 apply mufix_inv with (f:=fun y:nat => 0); auto.
-Save.
+Qed.
 
 Lemma Ycart_eqx : forall x, mu (Ycart x) (carac (eq_nat_dec x)) == F x.
 intros; apply Ueq_trans with (mufix (fun (p:nat->U) (y:nat) => F y) x).
@@ -206,7 +206,7 @@ apply H.
 apply Ule_trans with (2:=Ycart_ltx (S x0)); auto.
 apply mu_monotonic; apply carac_incl; red; intros; subst; auto with arith.
 exact (mufix_cte F x).
-Save.
+Qed.
 
 End UniformSec.
 End Ycart.

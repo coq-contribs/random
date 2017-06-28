@@ -36,7 +36,7 @@ apply (mu_monotonic start).
 repeat red; intros.
 apply (mu_stable_inv (step (hd x))) with (f:= fun x0 : A => f (add x0 x)).
 apply (mu_stable_inv start).
-Save.
+Qed.
 
 Lemma add_step_stable_plus : forall (start : distr (nelist A)), stable_plus (add_step start).
 red; unfold add_step; intros.
@@ -56,7 +56,7 @@ apply Ule_trans with
 apply (mu_monotonic (step (hd x))).
 repeat red; intros; apply (H (add x0 x)).
 apply (mu_stable_inv (step (hd x))).
-Save.
+Qed.
 
 
 Lemma add_step_stable_mult : forall (start : distr (nelist A)), stable_mult (add_step start).
@@ -68,7 +68,7 @@ repeat red; intros.
 apply (mu_stable_mult (step (hd x)) k)
  with (f:= fun x0 : A => f (add x0 x)).
 apply (mu_stable_mult start).
-Save.
+Qed.
 
 Lemma add_step_monotonic : forall (start : distr (nelist A)), monotonic (add_step start).
 red; unfold add_step; intros.
@@ -78,7 +78,7 @@ apply (mu_monotonic (step (hd x)))
  with (f:= fun x0 : A => f (add x0 x)).
 repeat red; intros.
 apply (H (add x0 x)).
-Save.
+Qed.
 
 Definition Add_step : (distr (nelist A)) -> (distr (nelist A)).
 intros start; exists (add_step start).
@@ -114,7 +114,7 @@ apply Ueq_trans with
   (fun l : nelist A => mu (step (hd l)) (fun x0 : A => g (add x0 l)))); trivial.
 apply (mu_stable_eq (path k x)); red; intros.
 rewrite hd_app; auto.
-Save.
+Qed.
 
 End TRANSITIONS.
 

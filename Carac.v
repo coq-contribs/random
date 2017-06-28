@@ -21,19 +21,19 @@ Definition carac (A:Type)(P:A -> Prop)(Pdec:dec P)(z:A): U := if (Pdec z) then 1
 Lemma carac_one : forall (A:Type)(P:A -> Prop)(Pdec:dec P)(z:A),
        P z -> carac Pdec z == 1.
 unfold carac; intros; case (Pdec z); intuition.
-Save.
+Qed.
 
 Lemma carac_zero : forall (A:Type)(P:A -> Prop)(Pdec:dec P)(z:A),
        ~P z -> carac Pdec z == 0.
 unfold carac; intros; case (Pdec z); intuition.
-Save.
+Qed.
 
 Lemma carac_unit : forall (A:Type)(P:A -> Prop)(Pdec : dec P)(a:A),
                                   (P a) -> 1 <= (mu (Munit a)) (carac Pdec).
 simpl;intros.
 unfold unit,carac.
 case (Pdec a); intuition.
-Save.
+Qed.
 
 Lemma carac_let_one : forall (A B:Type)(m1: distr A)(m2: A -> distr B) (P:B -> Prop)(Pdec: dec P),
      mu m1 (f_one A) == 1 -> (forall x:A, 1 <= mu (m2 x) (carac Pdec)) -> 1 <= mu (Mlet m1 m2) (carac Pdec) .
@@ -44,7 +44,7 @@ rewrite <- H.
 apply (mu_monotonic m1).
 red; intros.
 unfold f_one; simpl; auto.
-Save.
+Qed.
 
 Lemma carac_let : forall (A B:Type)(m1: distr A)(m2: A->distr B) (P:A->Prop)(Pdec: dec P)(f:B->U)(p:U),
      1 <= mu m1 (carac Pdec) -> (forall x:A, P x -> p <= mu (m2 x) f)
@@ -58,14 +58,14 @@ red; intros.
 unfold carac at 1; destruct (Pdec x);repeat Usimpl; auto.
 rewrite (mu_stable_mult m1 p (carac Pdec)).
 apply Ueq_trans with (p * 1); auto.
-Save.
+Qed.
 
 Lemma carac_incl: forall (A:Type)(P Q:A -> Prop)(Pdec: dec P)(Qdec: dec Q),
                                 incl P Q -> fle (carac Pdec) (carac Qdec).
 red; intros;unfold carac.
 case (Pdec x); case (Qdec x); intuition.
 absurd (Q x); intuition.
-Save.
+Qed.
 
 Definition equiv_dec : forall (A:Type)(P Q:A -> Prop),dec P -> equiv P Q -> dec Q.
 intros A P Q Pdec EQ.
@@ -77,7 +77,7 @@ Defined.
 Lemma carac_equiv : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(EQ : equiv P Q),
 feq  (carac (equiv_dec Pdec EQ)) (carac Pdec).
 red; unfold carac; intros; unfold equiv_dec; case (Pdec x); intuition.
-Save.
+Qed.
 
 Definition union_dec : forall (A:Type)(P Q:A -> Prop), dec P -> dec Q -> dec (union P Q).
 intros A P Q Pdec Qdec.
@@ -88,7 +88,7 @@ Lemma carac_union : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(Qdec : dec Q),
 feq  (carac (union_dec Pdec Qdec)) (fun a => (carac Pdec a) + (carac Qdec a)).
 red; unfold carac; intros. 
 unfold union_dec; case (Pdec x); intuition; case (Qdec x); intuition.
-Save.
+Qed.
 
 Definition inter_dec : forall (A:Type)(P Q:A -> Prop),(dec P)->(dec Q) -> dec (inter P Q).
 intros A P Q Pdec Qdec.
@@ -99,7 +99,7 @@ Lemma carac_inter : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(Qdec : dec Q),
 feq  (carac (inter_dec Pdec Qdec)) (fun a => (carac Pdec a) * (carac Qdec a)).
 red; unfold carac; intros. 
 unfold inter_dec; case (Pdec x); intuition; case (Qdec x); intuition.
-Save.
+Qed.
 
 Definition  compl_dec : forall (A:Type)(P:A -> Prop), dec P -> dec (compl P).
 intros A P Pdec.
@@ -110,7 +110,7 @@ Lemma carac_compl : forall (A:Type)(P:A -> Prop)(Pdec : dec P),
 feq  (carac (compl_dec Pdec)) (fun a => [1-](carac Pdec a)).
 red; unfold carac; intros. 
 unfold compl_dec; case (Pdec x); intuition.
-Save.
+Qed.
 
 Definition empty_dec : forall (A:Type)(P:A->Prop), equiv P (empty A) ->dec P.
 unfold dec,empty; right; red; intros.
@@ -121,23 +121,23 @@ Lemma carac_empty : forall (A:Type)(P:A->Prop)
        (empP:equiv P (empty A)),feq (carac (empty_dec empP)) (f_zero A).
 red; unfold carac; intros. 
 unfold empty_dec; intuition.
-Save.
+Qed.
 
 Lemma carac_mult_fun : forall (A:Type)(P:A -> Prop)(Pdec : dec P)(f g:A->U),
   (forall x, P x -> f x==g x) -> forall x, carac Pdec x * f x == carac Pdec x * g x.
 unfold carac; intros; destruct (Pdec x); repeat Usimpl; auto.
-Save.
+Qed.
 
 Lemma carac_esp_fun : forall (A:Type)(P:A -> Prop)(Pdec : dec P)(f g:A->U),
   (forall x, P x -> f x==g x) -> forall x, carac Pdec x & f x == carac Pdec x & g x.
 unfold carac; intros; destruct (Pdec x); repeat Usimpl; auto.
-Save.
+Qed.
 Hint Resolve carac_esp_fun.
 
 Lemma carac_esp_fun_le : forall (A:Type)(P:A -> Prop)(Pdec : dec P)(f g:A->U),
   (forall x, P x -> f x<=g x) -> forall x, carac Pdec x & f x <= carac Pdec x & g x.
 unfold carac; intros; destruct (Pdec x); repeat Usimpl; auto.
-Save.
+Qed.
 Hint Resolve carac_esp_fun_le.
 
 Lemma carac_ok : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(Qdec : dec Q),
@@ -146,7 +146,7 @@ red; red; intros.
 unfold finv; case (Pdec x); intro.
 rewrite carac_one; auto; rewrite carac_zero; auto.
 rewrite carac_zero; auto.
-Save.
+Qed.
 Hint Resolve carac_ok.
 
 
@@ -160,7 +160,7 @@ setoid_replace (mu m (carac Pdec)) with 1; auto.
 apply mu_le_esp with (f:=carac Pdec) (g:=f).
 apply mu_monotonic.
 repeat red; intros; auto.
-Save.
+Qed.
 
 Lemma mu_cut : forall (A:Type)(m:distr A)(P:A -> Prop)(Pdec : dec P)(f g:A->U),
   (forall x, P x -> f x==g x) -> 1<=mu m (carac Pdec) -> mu m f == mu m g.
@@ -169,7 +169,7 @@ apply mu_carac_esp; auto.
 intros; apply Ueq_trans with (mu m (fun x => carac Pdec x & g x)).
 apply mu_stable_eq; repeat red; intros;auto.
 apply Ueq_sym; apply mu_carac_esp; auto.
-Save.
+Qed.
 
 (** count the number of elements between 0 and n-1 which satisfy P *)
 Fixpoint nb_elts (P:nat -> Prop)(Pdec : dec P)(n:nat) {struct n} : nat :=
@@ -225,7 +225,7 @@ Lemma retract_fin_incl : forall P Q f, retract_fin P f -> incl Q P -> retract_fi
 unfold retract_fin; intros.
 apply (H Q0 FQ); auto.
 apply incl_trans with Q; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_monotonic : forall (f g : A -> U)(P:A->Prop)(FP:finite P),
        (forall x, P x -> (f x)<=(g x))-> sigma_fin f FP <= sigma_fin g FP.
@@ -234,14 +234,14 @@ apply Ule_trans with (f x + sigma_fin g FP); repeat Usimpl.
 apply IHFP.
 intros; case (e x0); unfold add in *; intuition.
 apply H; case (e x); unfold add in *; intuition.
-Save.
+Qed.
 
 Lemma sigma_fin_eq_compat : 
 forall (f g : A -> U)(P:A->Prop)(FP:finite P),
        (forall x, P x -> (f x)==(g x))-> sigma_fin f FP == sigma_fin g FP.
 intros; apply Ule_antisym; apply sigma_fin_monotonic; auto.
 intros; rewrite (H x); auto.
-Save.
+Qed.
 
 
 Lemma retract_fin_le : forall (P:A->Prop) (f g:A->U), 
@@ -251,7 +251,7 @@ apply Ule_trans with (g x); auto.
 apply Ule_trans with ([1-] sigma_fin g FQ); auto.
 apply Uinv_le_compat.
 apply sigma_fin_monotonic; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_mult : forall (f : A -> U) c (P:A->Prop)(FP:finite P),
        retract_fin P f -> sigma_fin (fun k  => c * f k) FP == c * sigma_fin f FP.
@@ -263,7 +263,7 @@ rewrite Udistr_plus_left; auto.
 rewrite IHFP; auto.
 apply retract_fin_incl with P; auto.
 case (e x); intuition.
-Save.
+Qed.
 
 Lemma sigma_fin_plus : forall (f g: A -> U) (P:A->Prop)(FP:finite P),
        sigma_fin (fun k  => f k + g k) FP == sigma_fin f FP + sigma_fin g FP.
@@ -272,13 +272,13 @@ repeat Usimpl; auto.
 rewrite IHFP.
 repeat norm_assoc_left; repeat Usimpl.
 repeat norm_assoc_right; repeat Usimpl; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_prod_maj : 
 forall (f g : A -> U)(P:A->Prop)(FP:finite P),
        sigma_fin (fun k  => f k * g k) FP <= sigma_fin f FP.
 induction FP; simpl; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_prod_le : 
 forall (f g : A -> U) (c:U) , (forall k, f k <= c) -> forall (P:A->Prop)(FP:finite P),
@@ -293,7 +293,7 @@ apply Ule_trans with ((f x) * (g x) + (c * sigma_fin g FP)); auto.
 apply Ule_trans with ( c * (g x) + (c * sigma_fin g FP)); auto.
 rewrite Udistr_plus_left; auto.
 case (e x); intuition.
-Save.
+Qed.
 
 Lemma sigma_fin_prod_ge : 
 forall (f g : A -> U) (c:U) , (forall k, c <= f k) -> forall (P:A->Prop)(FP:finite P),
@@ -307,7 +307,7 @@ apply retract_fin_incl with P; auto.
 apply Ule_trans with ((f x) * (g x) + (c * sigma_fin g FP)); auto.
 apply Ule_trans with ( c * (g x) + (c * sigma_fin g FP)); auto.
 case (e x); intuition.
-Save.
+Qed.
 Hint Resolve sigma_fin_prod_maj sigma_fin_prod_ge sigma_fin_prod_le.
 
 Lemma sigma_fin_inv : forall (f g : A -> U)(P:A->Prop)(FP:finite P),
@@ -355,12 +355,12 @@ rewrite (Uinv_opp_left (g x)).
 rewrite (Umult_one_right (f x)); auto.
 rewrite (Uplus_sym (f x) ([1-] (f x + sigma_fin f FP))).
 apply Ueq_sym; apply Uinv_plus_left; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_equiv : forall f P Q  (FP:finite P) (e:equiv P Q),
     (sigma_fin f (fin_equiv e FP)) = (sigma_fin f FP).
 induction FP; simpl; intros; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_rem : forall f P (FP:finite P) a, 
              P a -> sigma_fin f FP == f a + sigma_fin f (finite_rem decA a FP).
@@ -372,7 +372,7 @@ rewrite sigma_fin_equiv; auto.
 rewrite (IHFP a); auto.
 case (e a); unfold add; intuition.
 case f0; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_incl : forall f P (FP:finite P) Q (FQ:finite Q),
               (incl P Q) -> sigma_fin f FP <= sigma_fin f FQ.
@@ -412,19 +412,19 @@ assert (Q0 x);auto.
 assert (Q1 x);auto.
 case (e0 x); intuition.
 case H4; intuition.
-Save.
+Qed.
 
 Lemma sigma_fin_unique : forall f P Q (FP:finite P) (FQ:finite Q), (equiv P Q) -> sigma_fin f FP == sigma_fin f FQ.
 intros; apply Ule_antisym.
 apply sigma_fin_incl; auto.
 apply sigma_fin_incl; auto.
-Save.
+Qed.
 
 Lemma sigma_fin_cte : forall c P (FP:finite P), 
        sigma_fin (fun _ => c) FP == (size FP) */ c.
 induction FP; auto.
 simpl sigma_fin; simpl size; rewrite IHFP; auto.
-Save.
+Qed.
 
 (** *** Definition and Properties of [random_fin] *)
 
@@ -433,7 +433,7 @@ Variable FP : finite P.
 Let s:= (size FP - 1)%nat.
 Lemma pred_size_le : (size FP <=S s)%nat.
 unfold s; omega.
-Save.
+Qed.
 Hint Resolve pred_size_le.
 
 
@@ -441,7 +441,7 @@ Lemma pred_size_eq : notempty P -> size FP =S s.
 destruct FP; intros; simpl.
 unfold notempty in *; contradiction.
 unfold s; simpl; omega.
-Save.
+Qed.
 
 Definition random_fin :M A := fun (f:A->U) => sigma_fin (fun k => Unth s *  f k) FP.
 
@@ -459,13 +459,13 @@ subst; intuition.
 apply le_S_n.
 apply le_trans with (size FP); auto.
 rewrite (size_finite_rem decA x FP); auto.
-Save.
+Qed.
 
 Lemma random_fin_stable_inv : stable_inv random_fin.
 unfold random_fin, stable_inv, finv; intros; auto.
 rewrite (@sigma_fin_inv (fun k => [1/]1+s) f P FP); auto.
 apply fnth_retract_fin; trivial.
-Save.
+Qed.
 
 Lemma random_fin_stable_plus : stable_plus random_fin.
 unfold random_fin, stable_plus, fplus; intros; auto.
@@ -475,7 +475,7 @@ apply Ueq_trans with
 apply sigma_fin_eq_compat; intros; auto.
 apply sigma_fin_plus with (f:=fun k => Unth s * f k)
                       (g:=fun k => Unth s * g k); auto.
-Save.
+Qed.
 
 Lemma random_fin_stable_mult : stable_mult random_fin.
 unfold random_fin, stable_mult, fmult; intros; auto.
@@ -484,13 +484,13 @@ apply sigma_fin_eq_compat; intros; auto.
 apply sigma_fin_mult with (f:=fun k  => Unth s * f k).
 apply retract_fin_le with (fun (k:A) => [1/]1+s); auto.
 apply fnth_retract_fin; auto.
-Save.
+Qed.
 
 Lemma random_fin_monotonic : monotonic random_fin.
 unfold monotonic, random_fin; intros.
 red in H.
 apply sigma_fin_monotonic; auto.
-Save.
+Qed.
 
 Definition Random_fin : (distr A).
 exists random_fin.
@@ -508,7 +508,7 @@ apply sigma_fin_eq_compat.
 intros; repeat Usimpl; auto.
 rewrite sigma_fin_cte.
 rewrite pred_size_eq; auto.
-Save.
+Qed.
 End RandomFinite.
 
 Lemma random_fin_carac : 
@@ -525,14 +525,14 @@ case (decQ x); intro.
 rewrite size_inter_add_in; auto.
 rewrite Nmult_S; auto.
 repeat Usimpl; rewrite size_inter_add_notin; auto.
-Save.
+Qed.
 
 Lemma random_fin_P : forall P (FP:finite P) (decP:dec P), 
          notempty P -> mu (Random_fin FP) (carac decP) ==1.
 intros; rewrite random_fin_carac.
 rewrite (size_inter_incl decA decP FP FP); auto.
 pattern (size FP) at 1; rewrite pred_size_eq; auto.
-Save.
+Qed.
 
 
 End SigmaFinite.

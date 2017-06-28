@@ -48,7 +48,7 @@ Hint Unfold fplusok.
 
 Lemma fplusok_sym : forall (A:Type) (f g : A -> U) , fplusok f g -> fplusok g f.
 unfold fplusok, finv; auto.
-Save.
+Qed.
 Hint Immediate fplusok_sym.
 
 Definition stable_plus (A:Type) (m:M A) : Prop :=
@@ -70,7 +70,7 @@ Definition stable_mult (A:Type) (m:M A) : Prop :=
 Lemma monotonic_stable_eq : forall (A:Type) (m:M A), (monotonic m) -> (stable_eq m).
 red; unfold monotonic, fle.
 intros; apply Ule_antisym; auto.
-Save.
+Qed.
 Hint Resolve monotonic_stable_eq.
 
 Lemma stable_minus_distr : forall (A:Type) (m:M A), 
@@ -86,7 +86,7 @@ apply Ule_trans with ([1-](m (finv g))); auto.
 rewrite <- (splus (fminus f g)  g).
 apply (monotonic_stable_eq smon); auto; repeat red; unfold fplus; intros; auto.
 repeat red; intros; auto.
-Save.
+Qed.
 
 Hint Resolve stable_minus_distr.
 
@@ -96,14 +96,14 @@ Lemma inv_minus_distr : forall (A:Type) (m:M A),
 intros A m splus sinv smon; intros.
 apply Ueq_trans with (m (fminus (f_one A) f)); auto.
 apply (monotonic_stable_eq smon); repeat red; unfold fminus,finv,f_one; intros; auto.
-Save.
+Qed.
 Hint Resolve inv_minus_distr.
 
 Lemma le_minus_distr : forall (A : Type)(m:M A),
     monotonic m ->  forall  (f g:A -> U), m (fminus f g) <= m f.
 intros A m smon; intros.
 apply smon; repeat red; unfold fminus; auto.
-Save.
+Qed.
 Hint Resolve le_minus_distr.
 
 Lemma le_plus_distr : forall (A : Type)(m:M A),
@@ -115,7 +115,7 @@ apply smon; unfold fle,fplus,fminus,fesp; intros; auto.
 rewrite (splus (fminus f (fesp f g)) g).
 Usimpl; auto.
 repeat red; unfold fminus,fesp,finv; auto.
-Save.
+Qed.
 Hint Resolve le_plus_distr.
 
 Lemma le_esp_distr : forall (A : Type) (m:M A), 
@@ -131,7 +131,7 @@ apply Ule_trans with (m f - m (finv g)) ; repeat Usimpl.
 apply Uminus_le_compat_right; trivial.
 rewrite <- Uminus_assoc_left.
 rewrite Uminus_assoc_right; repeat Usimpl; auto.
-Save.
+Qed.
 
 
 (** *** Monotonicity *)
@@ -173,7 +173,7 @@ unfold star in |- *.
 apply Ule_trans with (m (finv (fun x:A => F x f))); trivial.
 apply H0.
 intros x; apply (H1 x f).
-Save.
+Qed.
 
 (** *** Stability for addition *)
 Lemma unit_stable_plus : forall (A:Type) (x:A), stable_plus (unit x).
@@ -236,7 +236,7 @@ Qed.
 (** *** Continuity *)
 Lemma unit_continuous : forall (A:Type) (x:A), continuous (unit x). 
 red; unfold unit; intros; auto.
-Save.
+Qed.
 
 Lemma star_continuous : forall (A B : Type) (m : M A)(F: A -> M B), 
     monotonic m-> continuous m -> 
@@ -248,7 +248,7 @@ apply (H1 x); auto.
 apply H0 with (fn := fun n x => F x (fn n)); intros; auto.
 repeat red; intros.
 apply (H2 x); auto.
-Save.
+Qed.
 
 
 End Monad.

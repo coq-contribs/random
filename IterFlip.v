@@ -26,7 +26,7 @@ Lemma Fiter_mon : forall f g : Z -> distr Z,
   (forall n, le_distr (f n) (g n)) -> forall n, le_distr (Fiter f n) (Fiter g n).
 unfold Fiter; intros.
 apply Mif_mon; auto.
-Save.
+Qed.
 
 Definition iterflip : Z -> (distr Z) := Mfix Fiter Fiter_mon.
 
@@ -41,7 +41,7 @@ Lemma p_eq : forall n:nat, p n == [1-]([1/2]^n).
 induction n; simpl; auto.
 setoid_rewrite IHn.
 apply Ueq_trans with ([1/2] * [1-]([1/2]^n) + [1-][1/2]);auto.
-Save.
+Qed.
 Hint Resolve p_eq.
 
 Lemma p_le : forall n:nat, [1-]([1/]1+n) <= p n.
@@ -49,7 +49,7 @@ intro; setoid_rewrite (p_eq n).
 apply Uinv_le_compat.
 induction n; simpl; intros; auto.
 apply Ule_trans with ([1/2] * ([1/]1+n)); auto.
-Save.
+Qed.
 
 Hint Resolve p_le.
 
@@ -64,7 +64,7 @@ apply exc_intro with m; auto.
 apply H0; auto; intros.
 apply Ule_trans with (p x); auto.
 apply Ule_trans with ([1-] ([1/]1+x)); auto.
-Save.
+Qed.
 
 Hint Resolve lim_p_one.
 
@@ -88,6 +88,6 @@ apply Uplus_le_compat_left.
 apply Ule_trans with (p i * [1/2]); auto.
 apply Umult_le_compat_left; auto.
 apply (H (Zsucc x)%Z).
-Save.
+Qed.
 
 End IterFlip.

@@ -21,7 +21,7 @@ Lemma Mif_mon : forall (A:Type) (b b':distr bool) (m1 m2 m1' m2': distr A),
     -> le_distr (Mif b m1 m2) (Mif b' m1' m2').
 intros; unfold Mif; apply Mlet_mon; auto.
 destruct x; auto.
-Save. 
+Qed. 
 
 (** ** Fixpoints *)
 Section Fixpoints.
@@ -47,7 +47,7 @@ Lemma Flift_mon : forall dn : A -> nat -> distr B,
  -> forall (x:A) (n m:nat), (n <= m)%nat ->le_distr (Flift dn x n) (Flift dn x m).
 unfold Flift; red; intros.
 apply F_mon; auto.
-Save.
+Qed.
 
 Hypothesis F_continuous : forall (dn:A->nat->distr B)
   (dnmon : forall x n m,(n <= m)%nat ->le_distr (dn x n) (dn x m))
@@ -61,13 +61,13 @@ Lemma muf_mon_succ :  forall (n:nat) (x:A), le_distr (muf x n) (muf x (S n)).
 induction n; unfold muf, le_distr; simpl; intros.
 auto.
 apply F_mon; auto.
-Save.
+Qed.
 
 Lemma muf_mon :  forall (x:A) (n m:nat), (n <= m)%nat -> le_distr (muf x n) (muf x m).
 induction 1; auto.
 apply le_distr_trans with (muf x m); auto.
 apply muf_mon_succ.
-Save.
+Qed.
 
 (** *** Definition *)
 Definition Mfix (x:A) := mu_lub (fun n => iter n x) (muf_mon x).
@@ -75,21 +75,21 @@ Definition Mfix (x:A) := mu_lub (fun n => iter n x) (muf_mon x).
 Lemma Mfix_le_iter :  forall (x : A) (n:nat), le_distr (iter n x) (Mfix x).
 red; intros; unfold Mfix.
 apply mu_lub_le with (muf:=fun n0:nat => iter n0 x); trivial.
-Save.
+Qed.
 Hint Resolve Mfix_le_iter.
 
 Lemma Mfix_iter_le :  forall  (m:A->distr B), 
               (forall (x : A) (n:nat), le_distr (iter n x) (m x)) -> forall x, le_distr (Mfix x) (m x).
 red; intros; unfold Mfix.
 apply mu_lub_sup with (muf:=fun n0:nat => iter n0 x); trivial.
-Save.
+Qed.
 Hint Resolve Mfix_iter_le.
 
 Lemma Mfix_le : forall x : A, le_distr (Mfix x) (F Mfix x).
 unfold Mfix at 1; red; intros.
 apply mu_lub_sup; trivial.
 destruct n; simpl; auto.
-Save.
+Qed.
 
 Lemma Mfix_sup : forall x : A, le_distr (F Mfix x) (Mfix x).
 unfold Mfix.
@@ -104,13 +104,13 @@ unfold Flift, dn.
 intros; apply mu_lub_sup; intros.
 apply le_distr_trans with (iter (S n) x); auto.
 apply mu_lub_le with (muf:=fun n0:nat => iter n0 x); auto.
-Save.
+Qed.
 
 Lemma Mfix_eq : forall x : A, eq_distr (Mfix x) (F Mfix x).
 red; intros; apply Ule_antisym.
 apply Mfix_le; trivial.
 apply Mfix_sup; trivial.
-Save.
+Qed.
 
 End Fixpoints.
 
@@ -126,7 +126,7 @@ apply le_distr_trans with (iter G n x0).
 generalize x0; clear x0; induction n; simpl; intros; auto.
 apply le_distr_trans with (G (iter F n) x0); auto.
 apply Mfix_le_iter.
-Save.
+Qed.
 
 (** ** Continuity *)
 
@@ -142,7 +142,7 @@ Lemma Mlet_incr :
              forall n m,(n <= m)%nat ->
              le_distr (Mlet (mun n) (fun x => Mn x n)) (Mlet (mun m) (fun x => Mn x m)). 
 intros; apply Mlet_mon; auto.
-Save.
+Qed.
 
 Lemma Mlet_continuous : 
              le_distr (Mlet (mu_lub mun mun_incr) (fun x => mu_lub (Mn x) (Mn_incr x)))
@@ -159,7 +159,7 @@ rewrite (double_lub_simpl
 intros; apply (@mun_incr n (S n)) with (f:=fun x : A => mu (Mn x m) f); auto with arith.
 intros; apply mu_monotonic; repeat red; intros; auto.
 apply (@Mn_incr x m (S m)) with (f:=f); auto with arith.
-Save.
+Qed.
 
 
 Variable Fn : nat -> (A -> distr B) -> A -> distr B.
@@ -179,7 +179,7 @@ Lemma Mfix_incr : forall x,
              forall n m,(n <= m)%nat ->
              le_distr (Mfix (Fn n) (Fn_mon n) x) (Mfix (Fn m) (Fn_mon m) x).
 intros; apply Mfix_le_stable; auto.
-Save.
+Qed.
 
 Lemma mu_lub_mon : 
              forall (f g : A -> distr B), (forall x, le_distr (f x) (g x)) 
@@ -189,14 +189,14 @@ repeat red; intros.
 simpl; unfold mu_lub_.
 apply lub_le_stable;intros.
 apply (Fn_mon n f g) with (x:=x); auto.
-Save.
+Qed.
 
 Lemma iter_incr : forall k x, 
              forall n m,(n <= m)%nat ->
              le_distr (iter (Fn n) k x) (iter (Fn m) k x).
 induction k; intros; simpl; auto.
 apply le_distr_trans with (Fn m (iter (Fn n) k) x); auto.
-Save.
+Qed.
 Hint Resolve iter_incr.
 
 Lemma iter_continuous : 
@@ -220,7 +220,7 @@ unfold dn; simpl; unfold mu_lub_,Flift.
 rewrite (double_lub_simpl (fun n m => mu (Fn n (fun y : A => iter (Fn m) k y) x) f)); auto.
 intros; apply (@Fn_incr (fun y : A => iter (Fn m) k y) x n (S n)); auto with arith.
 intros; apply (@Fn_mon n (fun y : A => iter (Fn m) k y) (fun y : A => iter (Fn (S m)) k y)); auto.
-Save.
+Qed.
 Hint Resolve iter_continuous.
 
 Lemma MFix_continuous : 
@@ -234,7 +234,7 @@ apply Ule_trans with
             mu (mu_lub (fun m => iter (Fn m) n x) (iter_incr n x)) f)).
 apply lub_le_stable; intros; apply iter_continuous.
 simpl; unfold mu_lub_; auto.
-Save.
+Qed.
 
 End Continuity.
 
@@ -260,7 +260,7 @@ unfold ok; intros.
 apply Ule_trans with p; auto.
 apply Ule_trans with (mu e q); auto.
 apply (mu_monotonic e); auto.
-Save.
+Qed.
 
 Lemma ok_eq_compat : forall (A:Type) (p p':U) (e e':distr A) (q q':A->U),
     p' == p ->  (feq q q') -> eq_distr e e' -> ok p e q -> ok p' e' q'.
@@ -269,24 +269,24 @@ apply Ule_trans with p; auto.
 apply Ule_trans with (mu e q); auto.
 apply Ule_trans with (mu e' q); auto.
 apply (mu_monotonic e'); auto.
-Save.
+Qed.
 
 Lemma okfun_le_compat : forall (A B:Type) (p p':A -> U) (e:A -> distr B) (q q':A->B->U),
     fle p' p -> (forall x,fle (q x) (q' x)) -> okfun p e q -> okfun p' e q'.
 unfold okfun; intros.
 apply ok_le_compat with (p x) (q x); auto.
-Save.
+Qed.
 
 Lemma ok_mult : forall (A:Type)(k p:U)(e:distr A)(f : A -> U), ok p e f -> ok (k*p) e (fmult k f).
 unfold ok; intros A k p e f oka.
 rewrite (mu_stable_mult e k f).
 apply Umult_le_compat_right; trivial.
-Save.
+Qed.
 
 Lemma ok_inv :   forall (A:Type)(p:U)(e:distr A)(f : A -> U), ok p e f -> mu e (finv f) <= [1-]p.
 unfold ok; intros A p e f oka.
 apply Ule_trans with ([1-](mu e f)); auto.
-Save.
+Qed.
 
 Lemma okup_le_compat : forall (A:Type) (p p':U) (e:distr A) (q q':A->U),
     p <= p' -> fle q' q -> okup p e q -> okup p' e q'.
@@ -294,7 +294,7 @@ unfold okup; intros.
 apply Ule_trans with p; auto.
 apply Ule_trans with (mu e q); auto.
 apply (mu_monotonic e); auto.
-Save.
+Qed.
 
 Lemma okup_eq_compat : forall (A:Type) (p p':U) (e e':distr A) (q q':A->U),
     p == p' ->  (feq q q') -> eq_distr e e' -> okup p e q -> okup p' e' q'.
@@ -303,19 +303,19 @@ apply Ule_trans with p; auto.
 apply Ule_trans with (mu e q); auto.
 apply Ule_trans with (mu e' q); auto.
 apply (mu_monotonic e'); auto.
-Save.
+Qed.
 
 Lemma upfun_le_compat : forall (A B:Type) (p p':A -> U) (e:A -> distr B) (q q':A->B->U),
     fle p p' -> (forall x,fle (q' x) (q x)) -> upfun p e q -> upfun p' e q'.
 unfold upfun; intros.
 apply okup_le_compat with (p x) (q x); auto.
-Save.
+Qed.
 
 Lemma okup_mult : forall (A:Type)(k p:U)(e:distr A)(f : A -> U), okup p e f -> okup (k*p) e (fmult k f).
 unfold okup; intros A k p e f oka.
 rewrite (mu_stable_mult e k f).
 apply Umult_le_compat_right; trivial.
-Save.
+Qed.
 
 
 (** ** Basic rules *)
@@ -329,7 +329,7 @@ unfold ok,okfun,Mlet; simpl; intros.
 apply Ule_trans with (mu a p); auto.
 unfold star.
 apply mu_monotonic; red; auto.
-Save.
+Qed.
 
 Lemma okup_apply_rule : forall (A B:Type)(a:distr A)(f:A->distr B)(r:U)(p:A->U)(q:B->U),
     (okup r a p) -> (upfun p f (fun x => q)) -> okup r (Mlet a f) q.
@@ -337,18 +337,18 @@ unfold okup,upfun,Mlet; simpl; intros.
 apply Ule_trans with (mu a p); auto.
 unfold star.
 apply mu_monotonic; red; auto.
-Save.
+Qed.
 
 (** *** Rules for abstraction *)
 Lemma lambda_rule : forall (A B:Type)(f:A->distr B)(p:A->U)(q:A -> B->U),
    (forall x:A, ok (p x) (f x) (q x)) -> okfun p f q.
 trivial.
-Save.
+Qed.
 
 Lemma okup_lambda_rule : forall (A B:Type)(f:A->distr B)(p:A->U)(q:A -> B->U),
    (forall x:A, okup (p x) (f x) (q x)) -> upfun p f q.
 trivial.
-Save.
+Qed.
 
 (** *** Rule for conditional
   $ \bfrac{\ok{p_1}{e_1}{q}~~~\ok{p_2}{e_2}{q}}
@@ -364,19 +364,19 @@ Lemma combiok : forall (A:Type) p q (f1 f2 : A -> U), p <= [1-]q -> fplusok (fmu
 unfold fplusok, fmult, fle, finv; intros.
 apply Ule_trans with p; auto.
 apply Ule_trans with ([1-]q); auto.
-Save.
+Qed.
 Hint Resolve combiok.
 
 Lemma fmult_fplusok : forall (A:Type) p q (f1 f2 : A -> U), fplusok f1 f2 -> fplusok (fmult p f1) (fmult q f2).
 unfold fplusok, fmult, fle, finv; intros.
 apply Ule_trans with (f1 x); auto.
 apply Ule_trans with ([1-]f2 x); auto.
-Save.
+Qed.
 Hint Resolve fmult_fplusok.
 
 Lemma ifok : forall f1 f2, fplusok (fmult f1 ctrue) (fmult f2 cfalse).
 intros; apply fmult_fplusok; unfold fplusok,ctrue,cfalse,finv; auto.
-Save.
+Qed.
 Hint Resolve ifok.
 
 Lemma Mif_eq : forall (A:Type)(b:(distr bool))(f1 f2:distr A)(q:A->U),
@@ -397,7 +397,7 @@ setoid_rewrite (mu_stable_plus b (f:=(fmult (mu f1 q) ctrue))
                 (ifok (mu f1 q) (mu f2 q))).
 setoid_rewrite (mu_stable_mult b (mu f1 q) ctrue).
 setoid_rewrite (mu_stable_mult b (mu f2 q) cfalse); trivial.
-Save.
+Qed.
 
 Lemma ifrule : 
   forall (A:Type)(b:(distr bool))(f1 f2:distr A)(p1 p2:U)(q:A->U),
@@ -408,7 +408,7 @@ setoid_rewrite (Mif_eq b f1 f2 q).
 apply Uplus_le_compat.
 apply Umult_le_compat_left; auto.
 apply Umult_le_compat_left; auto.
-Save.
+Qed.
 
 Lemma okup_ifrule : 
   forall (A:Type)(b:(distr bool))(f1 f2:distr A)(p1 p2:U)(q:A->U),
@@ -419,7 +419,7 @@ setoid_rewrite (Mif_eq b f1 f2 q).
 apply Uplus_le_compat.
 apply Umult_le_compat_left; auto.
 apply Umult_le_compat_left; auto.
-Save.
+Qed.
 
 
 (** *** Rule for fixpoints 
@@ -456,7 +456,7 @@ apply lub_le; auto.
 intro n; apply Ule_trans with (mu (iter F n x) (q x)).
 apply (H n).
 apply Mfix_le_iter; auto.
-Save.
+Qed.
 
 Lemma fixrule_up_lub : 
    (forall (i:nat) (f:A->distr B), 
@@ -467,7 +467,7 @@ unfold Mfix,mu_lub,mu_lub_; simpl.
 apply lub_le_stable.
 intro n; generalize x; induction n; simpl; intros; auto.
 apply (H n (iter F n) IHn x0).
-Save.
+Qed.
 
 Lemma okup_fixrule_glb : 
    (forall (x:A) n, p x (S n) <= p x n)->
@@ -486,7 +486,7 @@ unfold mu_lub_.
 apply lub_glb_le; auto.
 intros; apply (@muf_mon_succ A B F F_mon n x); auto.
 intro n; apply (H n).
-Save.
+Qed.
 End Ruleseq.
 
 Lemma okup_fixrule_inv : 
@@ -497,7 +497,7 @@ unfold upfun, okup; intros.
 unfold Mfix; simpl; unfold mu_lub_.
 apply lub_le.
 intro n; generalize x; induction n; simpl; auto.
-Save.
+Qed.
 
 
 (*
@@ -520,7 +520,7 @@ apply lub_le; auto.
 intro n; apply Ule_trans with (mu (iter F n x) q).
 apply (H0 n).
 apply Mfix_le_iter; auto.
-Save.
+Qed.
 End Ruleinv.
 *)
 
@@ -536,7 +536,7 @@ Hypothesis muF_mon : Fmonotonic muF.
 
 Lemma muF_stable : Fstable muF. 
 auto.
-Save.
+Qed.
 
 Definition mu_muF_commute_le  := 
   forall f x, (forall y, le_distr (f y) (Mfix F F_mon y)) -> 
@@ -556,14 +556,14 @@ apply F_muF_le.
 repeat red; intros; unfold Mfix, mu_lub,mu_lub_;simpl.
 apply le_lub with (f:=fun n => mu (iter F n y) f); auto.
 apply muF_mon; auto.
-Save.
+Qed.
 Hint Resolve mu_mufix_le.
 
 Lemma muF_le : forall f, (fle (muF f) f) 
       ->  forall x, mu (Mfix F F_mon x) (q x) <= f x.
 intros; apply Ule_trans with (mufix muF x); auto.
 apply mufix_inv; auto.
-Save.
+Qed.
 
 Hypothesis muF_F_le : 
     forall f x, (forall y, le_distr (f y) (Mfix F F_mon y)) -> 
@@ -579,7 +579,7 @@ apply muF_mon; auto.
 apply muF_F_le.
 repeat red; intros; unfold Mfix, mu_lub,mu_lub_;simpl.
 apply le_lub with (f:=fun n => mu (iter F n y) f); auto.
-Save.
+Qed.
 
 End F_muF_results.
 Hint Resolve mu_mufix_le mufix_mu_le.
@@ -591,7 +591,7 @@ Lemma mufix_mu :
 intros; apply Ule_antisym; auto.
 apply mufix_mu_le; intros; auto.
 rewrite (H f x0); auto. 
-Save.
+Qed.
 Hint Resolve mufix_mu.
 End Fix_muF.
 
@@ -615,7 +615,7 @@ rewrite mufix_eq; auto.
 apply muF_stable; auto.
 red; intros; auto.
 apply (mufix_mu (fun (x:A) => f_one B) muF_mon F_muF_eq_one x0).
-Save.
+Qed.
 Hint Resolve muF_pterm.
 End Fix_Term.
 
@@ -639,7 +639,7 @@ apply Uinv_le_perm_right.
 apply muF_le with (muF:=muFqinv) (q:=qinv) (f:=finv f) (x:=x); auto.
 unfold pterm; replace (qinv x) with (finv (q x)); auto.
 apply mu_monotonic; intro; unfold fesp,f_one; repeat Usimpl; auto.
-Save.
+Qed.
 
 Lemma muF_le_term_minus : 
 forall f, fle f pterm -> fle (muFqinv (fminus pterm f)) (fminus pterm f) ->
@@ -651,7 +651,7 @@ apply fle_trans with (muFqinv (fminus pterm f)).
 apply muF_mon_inv; unfold fle, fminus, finv; auto.
 apply fle_trans with (fminus pterm f); auto.
 unfold fle, fminus, Uminus, finv; auto.
-Save.
+Qed.
 
 Variable muFq : (A -> U) -> A -> U.
 
@@ -666,7 +666,7 @@ apply muF_le with (muF:=muFq); auto.
 apply Ule_trans with (f x & pterm x).
 rewrite H1; auto.
 apply muF_le_term; auto.
-Save.
+Qed.
 
 End Fix_muF_Term.
 End TransformFix.
@@ -700,7 +700,7 @@ unfold Loop; simpl; auto.
 apply (mu_monotonic (stop x)); red; intros.
 case x0; auto.
 apply (mu_monotonic (step x)); red; auto.
-Save.
+Qed.
 
 Fixpoint up_loopn (n:nat)(x:A){struct n}  : U := 
     match n with O => 1
@@ -728,7 +728,7 @@ unfold Loop; simpl; auto.
 apply (mu_monotonic (stop x)); red; intros.
 case x0; auto.
 apply (mu_monotonic (step x)); red; auto.
-Save.
+Qed.
 
 End LoopRule.
 
@@ -745,43 +745,43 @@ Defined.
 Lemma low_Imu : forall (A:Type) (e:distr A) (F: A -> IU),
              low (Imu e F) = mu e (fun x => low (F x)).
 trivial.
-Save.
+Qed.
 
 Lemma up_Imu : forall (A:Type) (e:distr A) (F: A -> IU),
              up (Imu e F) = mu e (fun x => up (F x)).
 trivial.
-Save.
+Qed.
 
 Lemma Imu_monotonic : forall (A:Type) (e:distr A) (F G : A -> IU),
             (forall x, Iincl (F x) (G x)) -> Iincl (Imu e F) (Imu e G).
 unfold Iincl,Imu; simpl; intuition.
 apply mu_monotonic; firstorder.
 apply mu_monotonic; firstorder.
-Save.
+Qed.
 
 Lemma Imu_stable_eq : forall (A:Type) (e:distr A) (F G : A -> IU),
             (forall x, Ieq (F x) (G x)) -> Ieq (Imu e F) (Imu e G).
 unfold Ieq,Imu; simpl; intuition.
 apply mu_stable_eq; firstorder.
 apply mu_stable_eq; firstorder.
-Save.
+Qed.
 Hint Resolve Imu_monotonic Imu_stable_eq.
 
 Lemma Imu_singl : forall (A:Type) (e:distr A) (f:A->U),
            Ieq (Imu e (fun x => singl (f x))) (singl (mu e f)).
 unfold Ieq,Imu,singl; simpl; intuition.
-Save.
+Qed.
 
 Lemma Imu_inf : forall (A:Type) (e:distr A) (f:A->U),
            Ieq (Imu e (fun x => inf (f x))) (inf (mu e f)).
 unfold Ieq,Imu,inf; simpl; intuition.
 exact (mu_zero e).
-Save.
+Qed.
 
 Lemma Imu_sup : forall (A:Type) (e:distr A) (f:A->U),
            Iincl (Imu e (fun x => sup (f x))) (sup (mu e f)).
 unfold Iincl,Imu,inf; simpl; intuition.
-Save.
+Qed.
 
 Lemma Iin_mu_Imu : 
    forall (A:Type) (e:distr A) (F:A->IU) (f:A->U),
@@ -789,7 +789,7 @@ Lemma Iin_mu_Imu :
 unfold Iin,Imu; simpl; split.
 apply mu_monotonic; firstorder.
 apply mu_monotonic; firstorder.
-Save.
+Qed.
 Hint Resolve Iin_mu_Imu.
 
 Definition Iok (A:Type) (I:IU) (e:distr A) (F:A->IU) := Iincl (Imu e F) I.
@@ -800,7 +800,7 @@ Lemma Iin_mu_Iok :
    forall (A:Type) (I:IU) (e:distr A) (F:A->IU) (f:A->U),
            (forall x, Iin (f x) (F x)) -> Iok I e F -> Iin (mu e f) I.
 intros; apply Iincl_in with (Imu e F); auto.
-Save.
+Qed.
 
 
 (** *** Stability *)
@@ -808,18 +808,18 @@ Lemma Iok_le_compat : forall (A:Type) (I J:IU) (e:distr A) (F G:A->IU),
    Iincl I J -> (forall x, Iincl (G x) (F x)) -> Iok I e F -> Iok J e G.
 unfold Iok; intros; apply Iincl_trans with I; auto.
 apply Iincl_trans with (Imu e F); auto.
-Save.
+Qed.
 
 Lemma Iokfun_le_compat : forall (A B:Type) (I J:A->IU) (e:A->distr B) (F G:A->B->IU),
    (forall x, Iincl (I x) (J x)) -> (forall x y, Iincl (G x y) (F x y)) -> Iokfun I e F -> Iokfun J e G.
 unfold Iokfun; intros; apply Iok_le_compat with (I x) (F x); auto.
-Save.
+Qed.
 
 (** *** Rule for values *)
 
 Lemma Iunit_eq : forall (A: Type) (a:A) (F:A->IU), Ieq (Imu (Munit a) F) (F a).
 intros; unfold Ieq,Imu,Munit; simpl; auto.
-Save.
+Qed.
 
 
 (** *** Rule for application *)
@@ -827,7 +827,7 @@ Save.
 Lemma Ilet_eq : forall (A B : Type) (a:distr A) (f:A->distr B)(I:IU)(G:B->IU),
    Ieq (Imu (Mlet a f) G) (Imu a (fun x => Imu (f x) G)).
 unfold Ieq,Imu,Mlet,Iincl; simpl; intuition. 
-Save.
+Qed.
 Hint Resolve Ilet_eq.
 
 Lemma Iapply_rule : forall (A B : Type) (a:distr A) (f:A->distr B)(I:IU)(F:A->IU)(G:B->IU),
@@ -835,13 +835,13 @@ Lemma Iapply_rule : forall (A B : Type) (a:distr A) (f:A->distr B)(I:IU)(F:A->IU
 unfold Iokfun,Iok;intros.
 apply Ieq_incl_trans with (Imu a (fun x => Imu (f x) G)); auto.
 apply Iincl_trans with (Imu a F); auto.
-Save.
+Qed.
 
 (** *** Rule for abstraction *)
 Lemma Ilambda_rule : forall (A B:Type)(f:A->distr B)(F:A->IU)(G:A -> B->IU),
    (forall x:A, Iok (F x) (f x) (G x)) -> Iokfun F f G.
 trivial.
-Save.
+Qed.
 
 
 (** *** Rule for conditional *)
@@ -854,7 +854,7 @@ repeat rewrite Mif_eq.
 repeat rewrite low_Iplus; repeat rewrite low_Imultk.
 repeat rewrite up_Iplus; repeat rewrite up_Imultk.
 repeat rewrite low_Imu; repeat rewrite up_Imu; auto.
-Save.
+Qed.
 
 Lemma Iifrule : 
   forall (A:Type)(b:(distr bool))(f1 f2:distr A)(I1 I2:IU)(F:A->IU),
@@ -867,7 +867,7 @@ repeat rewrite low_Iplus; repeat rewrite low_Imultk.
 apply Uplus_le_compat; auto.
 repeat rewrite up_Iplus; repeat rewrite up_Imultk.
 apply Uplus_le_compat; auto.
-Save.
+Qed.
 
 (** *** Rule for fixpoints 
 with $\phi(x)=F(\phi)(x)$, $p_i$ an decreasing sequence of intervals functions ($p_{i+1}(x)\subseteq p_i(x)$) such that $p_0(x)$ contains $0$ for all $x$.
@@ -909,7 +909,7 @@ unfold Mfix,mu_lub,mu_lub_; simpl.
 apply lub_glb_le; intros; auto.
 apply (@muf_mon_succ A B F F_mon n x); auto.
 case (H n x); auto.
-Save.
+Qed.
 End IRuleseq.
 
 Section ITransformFix.
@@ -923,7 +923,7 @@ Hypothesis ImuF_mon : forall I J,
 Lemma ImuF_stable : forall I J, 
       (forall x, Ieq (I x) (J x)) -> forall x, Ieq (ImuF I x) (ImuF J x).
 intros; apply Iincl_antisym; auto.
-Save.
+Qed.
 
 Section IF_muF_results.
 Hypothesis Iincl_F_ImuF : 
@@ -948,7 +948,7 @@ apply (@muf_mon_succ A B F F_mon n x).
 case (Iiter_decr ImuF ImuF_mon x n); auto.
 case (H n x); intros.
 apply Ule_trans with (up (Imu (iter F n x) (Q x))); auto.
-Save.
+Qed.
 Hint Resolve Iincl_fix_ifix.
 
 (*
@@ -974,13 +974,13 @@ apply (@muf_mon_succ A B F F_mon n x).
 case (Iiter_decr ImuF ImuF_mon x n); auto.
 case (H n x); intros.
 apply Ule_trans with (up (Imu (iter F n x) (Q x))); auto.
-Save.
+Qed.
 Hint Resolve Iincl_fix_mu.
 
 Lemma Iincl_ImuF : forall f, (forall x, Iincl (f x) (ImuF f x)) -> forall x, Iincl (Imu (Mfix F F_mon x) (Q x)) (f x).
 intros; apply Iincl_trans with (Ifix ImuF ImuF_mon x); auto.
 apply Iincl_inv; auto.
-Save.
+Qed.
 
 Hypothesis muF_F_le : 
     forall f x, (forall y, le_distr (f y) (Mfix F F_mon y)) -> 
@@ -996,7 +996,7 @@ apply muF_mon; auto.
 apply muF_F_le.
 repeat red; intros; unfold Mfix, mu_lub,mu_lub_;simpl.
 apply le_lub with (f:=fun n => mu (iter F n y) f); auto.
-Save.
+Qed.
 
 End F_muF_results.
 Hint Resolve mu_mufix_le mufix_mu_le.
@@ -1008,7 +1008,7 @@ Lemma mufix_mu :
 intros; apply Ule_antisym; auto.
 apply mufix_mu_le; intros; auto.
 rewrite (H f x0); auto. 
-Save.
+Qed.
 Hint Resolve mufix_mu.
 End Fix_muF.
 
@@ -1032,7 +1032,7 @@ rewrite mufix_eq; auto.
 apply muF_stable; auto.
 red; intros; auto.
 apply (mufix_mu (fun (x:A) => f_one B) muF_mon F_muF_eq_one x0).
-Save.
+Qed.
 Hint Resolve muF_pterm.
 End Fix_Term.
 
@@ -1058,7 +1058,7 @@ apply Uinv_le_perm_right.
 apply muF_le with (muF:=muF qinv) (q:=qinv) (f:=finv f) (x:=x); auto.
 unfold pterm; replace (qinv x) with (finv (q x)); auto.
 apply mu_monotonic; intro; unfold fesp,f_one; repeat Usimpl; auto.
-Save.
+Qed.
 
 Hypothesis F_muF_le : 
     forall f x, (forall y, le_distr (f y) (Mfix F F_mon y))
@@ -1071,7 +1071,7 @@ apply muF_le with (muF:=muF q); auto.
 apply Ule_trans with (f x & pterm x).
 rewrite H1; auto.
 apply muF_le_term; auto.
-Save.
+Qed.
 
 End Fix_muF_Term.
 
@@ -1088,30 +1088,30 @@ End IFixrule.
 
 Lemma Flip_ctrue : mu Flip ctrue == [1/2].
 unfold Flip; auto.
-Save.
+Qed.
 
 Lemma Flip_cfalse : mu Flip cfalse == [1/2].
 unfold Flip; auto.
-Save.
+Qed.
 
 Lemma ok_Flip :   forall q : bool -> U, ok ([1/2] * q true + [1/2] * q false) Flip q.
 red; unfold Flip, flip; simpl; auto.
-Save.
+Qed.
 
 Lemma okup_Flip :   forall q : bool -> U, okup ([1/2] * q true + [1/2] * q false) Flip q.
 red; unfold Flip, flip; simpl; auto.
-Save.
+Qed.
 
 Hint Resolve ok_Flip okup_Flip Flip_ctrue Flip_cfalse.
 
 Lemma Flip_eq : forall q : bool -> U, mu Flip q == [1/2] * q true + [1/2] * q false.
 intros; apply Ule_antisym; auto.
-Save.
+Qed.
 Hint Resolve Flip_eq.
 
 Lemma IFlip_eq : forall Q : bool -> IU, Ieq (Imu Flip Q) (Iplus (Imultk [1/2] (Q true)) (Imultk [1/2] (Q false))).
 red; unfold Flip, flip; simpl; auto.
-Save.
+Qed.
 Hint Resolve IFlip_eq.
 
 (** ** Rules for total (well-founded) fixpoints *)
@@ -1131,14 +1131,14 @@ Lemma Acc_iter_distr :
 intros x r; elim r using Acc_inv_dep; simpl; intros.
 case s; simpl; intros.
 apply Fext; auto.
-Save.
+Qed.
 
 Lemma WfFix_eq : forall x, eq_distr (WfFix x) (F (fun (y:A) (p:R y x) => WfFix y)).
 intro x; unfold WfFix,Fix.
 case (Rwf x); simpl; intros.
 apply Fext; intros.
 apply Acc_iter_distr.
-Save.
+Qed.
 
 Variable P : distr B -> Prop.
 Hypothesis Pext : forall m1 m2, eq_distr m1 m2 -> P m1 -> P m2.
@@ -1150,7 +1150,7 @@ intros; pattern x; apply well_founded_ind with (R:=R); trivial; intros.
 apply Pext with (m1:=  F (fun (y:A) (p:R y x0) => WfFix y)).
 apply eq_distr_sym; apply WfFix_eq.
 apply H; auto.
-Save.
+Qed.
 
 End Wellfounded.
 

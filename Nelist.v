@@ -25,7 +25,7 @@ Definition rev (l:nelist) : nelist :=
 Lemma app_assoc : forall l1 l2 l3, app l1 (app l2 l3) = app (app l1 l2) l3.
 intros; induction l1; simpl; auto.
 rewrite IHl1; auto.
-Save.
+Qed.
 
 Hint Resolve app_assoc.
 
@@ -34,7 +34,7 @@ induction l; simpl; intros; auto.
 rewrite IHl.
 rewrite IHl.
 rewrite <- app_assoc; trivial.
-Save.
+Qed.
 
 Hint Resolve rev_app_rev.
 
@@ -43,32 +43,32 @@ induction l; intros;simpl; auto.
 rewrite IHl; simpl.
 rewrite rev_app_rev.
 rewrite <- app_assoc; trivial.
-Save.
+Qed.
 
 Lemma rev_rev : forall l, rev (rev l) = l.
 destruct l; simpl; intros; auto.
 rewrite rev_app_app_rev; trivial.
-Save.
+Qed.
 
 Lemma rev_app_distr : forall l m, rev (app l m) = app (rev m) (rev l).
 induction l; intros;simpl; auto.
 rewrite rev_app_rev.
 rewrite rev_app_rev.
 rewrite IHl; auto.
-Save.
+Qed.
 
 Hint Resolve rev_rev rev_app_distr.
 
 Lemma hd_app : forall l m, hd (app l m) = hd l.
 destruct l; simpl; auto.
-Save.
+Qed.
 
 Hint Resolve hd_app.
 
 Lemma hd_rev_add : forall a l, hd (rev (add a l)) = hd (rev l).
 simpl; intros.
 rewrite rev_app_rev; auto.
-Save.
+Qed.
 Hint Resolve hd_rev_add.
 
 End NELIST.

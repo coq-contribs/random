@@ -32,7 +32,7 @@ Lemma Fbern_mon : forall f g : U -> distr bool,
  (forall n, le_distr (f n) (g n)) -> forall n, le_distr (Fbern f n) (Fbern g n).
 unfold Fbern; intros.
 apply Mif_mon; case (dec_demi n); auto.
-Save.
+Qed.
 
 Definition bernoulli : U -> distr bool := Mfix Fbern Fbern_mon.
 
@@ -50,27 +50,27 @@ intros; unfold Fbern,Mubern; intros.
 case (dec_demi p).
 rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
 rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
-Save.
+Qed.
 
    
 
 Lemma Mubern_mon : forall (q: bool -> U), Fmonotonic (Mubern q).
 red; red; intros; unfold Mubern; auto.
 case (dec_demi x); repeat Usimpl; auto.
-Save.
+Qed.
 Hint Resolve Mubern_mon Mubern_eq.
 
 Lemma Bern_eq : 
     forall q : bool -> U, forall p, mu (bernoulli p) q == mufix (Mubern q) p.
 intros; apply Ueq_sym.
 unfold bernoulli; apply mufix_mu with (muF:=(Mubern q)) (q:=fun (p:U) => q); auto. 
-Save.
+Qed.
 Hint Resolve Bern_eq.
 
 Lemma Bern_commute : forall q : bool -> U, 
    mu_muF_commute_le Fbern Fbern_mon (fun (x:U)=>q) (Mubern q).
 red; auto.
-Save.
+Qed.
 Hint Resolve Bern_commute.
 
 Lemma Bern_term : forall p, mu (bernoulli p) (f_one bool) == 1.
@@ -82,7 +82,7 @@ intros; rewrite U1min_S.
 unfold Mubern at 1; simpl.
 unfold f_one; repeat Usimpl.
 case (dec_demi p0); rewrite IHn; repeat Usimpl; auto.
-Save.
+Qed.
 Hint Resolve Bern_term.
 
 (** *** p is an invariant of Mubern qtrue *)
@@ -91,7 +91,7 @@ Lemma MuBern_true : forall p, Mubern B2U (fun q => q) p == p.
 intros; unfold Mubern, B2U; case (dec_demi p); intros; repeat Usimpl.
 apply half_twice; auto.
 apply half_esp; auto.
-Save.
+Qed.
 Hint Resolve MuBern_true.
 
 Lemma MuBern_false : forall p, Mubern (finv B2U) (finv (fun q => q)) p == [1-]p.
@@ -100,7 +100,7 @@ rewrite Uplus_sym; rewrite Uinv_half; repeat Usimpl.
 apply half_twice; auto.
 rewrite Uinv_esp_plus.
 apply half_twice; auto.
-Save.
+Qed.
 Hint Resolve MuBern_false.
 
 
@@ -113,20 +113,20 @@ apply muF_eq with
     (f:=fun (x:U) => x);intros; auto.
 unfold qinv; auto.
 exact (Bern_term p).
-Save.
+Qed.
 
 Lemma Bern_false : forall p, mu (bernoulli p) NB2U == [1-]p.
 intros; apply Ueq_trans with (mu (bernoulli p) (finv B2U)).
 apply mu_stable_eq; auto.
 rewrite mu_inv_minus.
 rewrite Bern_term; rewrite Bern_true; auto.
-Save.
+Qed.
 
 Lemma Mubern_inv : forall (q: bool -> U) (f:U -> U) (p:U),
       Mubern (finv q) (finv f) p == [1-] Mubern q f p.
 intros; unfold Mubern,finv.
 case (dec_demi p); intro; auto.
-Save.
+Qed.
  
 (** *** Proofs using lubs *)
 (**   Invariant [pmin p]  $pmin(p)(n) = p - \frac{1}{2^n}$ *)
@@ -162,7 +162,7 @@ repeat Usimpl.
 apply Ule_trans with ((pmin (x & x) i) * [1/2] + [1/2]).
 apply Ule_trans with (1:=(pmin_esp_le x i)); auto.
 repeat Usimpl; apply (H (x&x)); auto.
-Save.
+Qed.
 
 (** Property : $\forall p, \ok{1-p}{\mathrm{bernoulli}~p}{\mathbf{result}=\mathrm{false}} $ *)
 
@@ -195,13 +195,13 @@ assert ([1-] x <= [1/2]); auto.
 setoid_rewrite (pmin_plus_eq i H0).
 repeat Usimpl; trivial.
 repeat Usimpl; apply (H (x&x)); auto.
-Save.
+Qed.
 
 (** Probability for the result of $(\mathrm{bernoulli}~p)$ to be true is exactly $p$ *)
 
 Lemma qtrue_qfalse_inv : forall (b:bool) (x:U), qtrue x b == [1-] (qfalse x b).
 intros; case b; simpl; auto.
-Save.
+Qed.
 
 Lemma bernoulli_eq_true :  forall p, mu (bernoulli p) (qtrue p) == p.
 intros; apply Ule_antisym.
@@ -214,7 +214,7 @@ exact (mu_stable_inv (bernoulli p) (qfalse p)).
 apply Uinv_le_perm_left.
 apply (bernoulli_false p).
 apply (bernoulli_true p).
-Save.
+Qed.
 
 Lemma bernoulli_eq_false :  forall p, mu (bernoulli p) (qfalse p)== [1-]p.
 intros; apply Ule_antisym.
@@ -227,7 +227,7 @@ exact (mu_stable_inv (bernoulli p) (qtrue p)).
 apply Uinv_le_perm_left; Usimpl.
 apply (bernoulli_true p).
 apply (bernoulli_false p).
-Save.
+Qed.
 
 Lemma bernoulli_eq :  forall p f, mu (bernoulli p) f == p * f true + ([1-]p) * f false.
 intros; apply Ueq_trans with (mu (bernoulli p) (fun b => f true * qtrue p b + f false * qfalse p b)).
@@ -241,11 +241,11 @@ rewrite (mu_stable_mult (bernoulli p) (f false) (qfalse p)).
 rewrite bernoulli_eq_true; rewrite bernoulli_eq_false.
 apply Uplus_eq_compat; auto.
 repeat red; unfold fle,finv,qtrue,qfalse,B2U,NB2U; destruct x; repeat Usimpl; auto.
-Save.
+Qed.
 
 Lemma bernoulli_total : forall p , mu (bernoulli p) (f_one bool)==1.
 intros; rewrite bernoulli_eq; unfold f_one; repeat Usimpl; auto.
-Save.
+Qed.
 
 (** ** Binomial distribution *)
 
@@ -260,27 +260,27 @@ Fixpoint comb (k n:nat) {struct n} : nat :=
 
 Lemma comb_0_n : forall n, comb 0 n = 1%nat.
 destruct n; trivial.
-Save.
+Qed.
 
 Lemma comb_not_le : forall n k, le (S n) k -> comb k n=0%nat.
 induction n; destruct k; simpl; auto with zarith; intros.
 rewrite (IHn k); auto with zarith.
 rewrite (IHn (S k)); auto with zarith.
-Save.
+Qed.
 
 Lemma comb_Sn_n : forall n, comb (S n) n =0%nat.
 intro; apply comb_not_le; auto.
-Save.
+Qed.
 
 Lemma comb_n_n : forall n, comb n n = (1%nat).
 induction n; simpl; auto.
 rewrite comb_Sn_n; auto with zarith.
-Save.
+Qed.
 
 Lemma comb_1_Sn : forall n, comb 1 (S n) = (S n).
 induction n; auto.
 replace (comb 1 (S (S n))) with ((comb 0 (S n)+comb 1 (S n))%nat); auto.
-Save.
+Qed.
 
 Lemma comb_inv : forall n k, (k<=n)%nat -> comb k n = comb (n-k) n.
 induction n; destruct k; simpl; auto with zarith; intros.
@@ -293,7 +293,7 @@ rewrite (IHn (S k)); auto.
 rewrite (IHn k); auto with zarith.
 subst.
 rewrite comb_Sn_n; rewrite comb_n_n; rewrite <- minus_n_n; trivial.
-Save.
+Qed.
 
 Lemma comb_n_Sn : forall n, comb n (S n) = (S n).
 intros; transitivity (comb (S n - n) (S n)).
@@ -301,45 +301,45 @@ apply comb_inv; auto.
 rewrite <- minus_Sn_m; auto.
 rewrite <- minus_n_n.
 apply comb_1_Sn.
-Save.
+Qed.
 
 Definition fc (p:U)(n k:nat) :=  (comb k n) */ (p^k * ([1-]p)^(n-k)).
 
 Lemma fcp_0 : forall p n, fc p n O == ([1-]p)^n.
 intros; unfold fc; rewrite comb_0_n; repeat Usimpl.
 rewrite <- minus_n_O; auto.
-Save.
+Qed.
 
 Lemma fcp_n : forall p n, fc p n n == p^n.
 intros; unfold fc; rewrite comb_n_n; repeat Usimpl.
 rewrite <- minus_n_n; auto.
-Save.
+Qed.
 
 Lemma fcp_not_le : forall p n k, (S n <= k)%nat -> fc p n k == 0.
 unfold fc; intros; rewrite comb_not_le; auto.
-Save.
+Qed.
 
 Lemma fc0 : forall n k, fc 0 n (S k) == 0.
 intros; unfold fc; simpl; repeat Usimpl; auto.
-Save.
+Qed.
 Hint Resolve fc0.
 
 Add Morphism fc with signature Ueq ==> eq ==> eq ==> Ueq as fc_eq_compat.
 unfold fc; intros; rewrite H; auto.
-Save.
+Qed.
 
 Hint Resolve fc_eq_compat.
 
 Lemma sigma_fc0 : forall n k,  sigma (fc 0 n) (S k) ==1.
 intros; rewrite sigma_S_lift.
 rewrite fcp_0; rewrite sigma_zero; repeat Usimpl; auto.
-Save.
+Qed.
  
 Lemma retract_class : forall f n, class (retract f n).
 unfold retract; red; intros.
 apply Ule_class; red; intros.
 apply H; intro; auto.
-Save.
+Qed.
 Hint Resolve retract_class.
 
 Lemma fc_retract : 
@@ -355,7 +355,7 @@ apply retract_lt.
 apply Ule_lt_trans with ([1-]p^n); auto.
 apply Ule_trans with (p^n); auto.
 rewrite fcp_n; auto.
-Save.
+Qed.
 Hint Resolve fc_retract.
 
 Lemma fc_Nmult_def : 
@@ -377,7 +377,7 @@ apply Ule_lt_trans with ([1-](p^n)); auto.
 subst.
 rewrite comb_n_n; auto.
 rewrite comb_not_le; auto with arith.
-Save.
+Qed.
 Hint Resolve fc_Nmult_def.
 
 Lemma fcp_S : 
@@ -403,12 +403,12 @@ subst; repeat rewrite fcp_n.
 rewrite fcp_not_le; repeat Usimpl; auto.
 repeat (rewrite fcp_not_le; auto with arith).
 repeat Usimpl; auto.
-Save.
+Qed.
 
 Lemma sigma_fc_1 : forall p n, ([1-]p^n == sigma (fc p n) n) ->1==sigma (fc p n) (S n).
 intros; rewrite sigma_S.
 rewrite <- H; rewrite fcp_n; auto.
-Save.
+Qed.
 Hint Resolve sigma_fc_1.
 
 Lemma Uinv_exp : forall p n,  [1-](p^n)==sigma (fc p n) n.
@@ -436,13 +436,13 @@ rewrite sigma_S_lift; repeat Usimpl; rewrite fcp_0; auto.
 repeat Usimpl.
 apply sigma_eq_compat; intros.
 apply Ueq_sym; apply fcp_S; auto.
-Save.
+Qed.
 
 Hint Resolve Uinv_exp.
 
 Lemma Nmult_comb : forall p n k, Nmult_def (comb k n) (p ^ k * ([1-] p) ^ (n - k)).
 auto.
-Save.
+Qed.
 Hint Resolve Nmult_comb.
 
 Definition qk (k n:nat) : U := if eq_nat_dec k n then 1 else 0.
@@ -501,6 +501,6 @@ rewrite fcp_S; auto.
 (* fplusok *)
 repeat red; unfold finv,qk; intros.
 case (eq_nat_dec k x); intro; auto.
-Save.
+Qed.
 
 End Bernoulli.

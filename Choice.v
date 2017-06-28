@@ -84,7 +84,7 @@ setoid_rewrite <- (mu_stable_plus p2 H1); auto.
 apply (mu_monotonic p1); red; intros.
 apply (mu_monotonic p2); red; intros.
 apply Ule_trans with ((Q x) + (Q x0)); auto.
-Save.
+Qed.
 
 End CHOICE.
 End Choice.
