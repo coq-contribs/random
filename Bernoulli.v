@@ -14,21 +14,21 @@ Import RP.PP.MP.UP.
 (* end hide *)
 
 (** ** Program for computing a Bernoulli distribution
-       bernoulli p gives true with probability p 
+       bernoulli p gives true with probability p
        and false with probability (1-p)
 <<
-let rec bernoulli x = if flip then 
+let rec bernoulli x = if flip then
         if x < 1/2 then false else bernoulli (2 p - 1)
         else if x < 1/2 then bernoulli (2 p) else true
 >>*)
-Hypothesis dec_demi : forall x : U, {x < [1/2]}+{[1/2] <= x}. 
+Hypothesis dec_demi : forall x : U, {x < [1/2]}+{[1/2] <= x}.
 
-Definition Fbern (f: U -> distr bool) (p:U) := 
-    Mif Flip 
+Definition Fbern (f: U -> distr bool) (p:U) :=
+    Mif Flip
        (if dec_demi p then Munit false else f (p & p))
        (if dec_demi p then f (p + p) else Munit true).
 
-Lemma Fbern_mon : forall f g : U -> distr bool, 
+Lemma Fbern_mon : forall f g : U -> distr bool,
  (forall n, le_distr (f n) (g n)) -> forall n, le_distr (Fbern f n) (Fbern g n).
 unfold Fbern; intros.
 apply Mif_mon; case (dec_demi n); auto.
@@ -40,7 +40,7 @@ Definition bernoulli : U -> distr bool := Mfix Fbern Fbern_mon.
 
 (** *** Proofs using fixpoint rules *)
 
-Definition Mubern (q: bool -> U) (bern : U -> U) (p:U) := 
+Definition Mubern (q: bool -> U) (bern : U -> U) (p:U) :=
                 if dec_demi p then [1/2]*(q false)+[1/2]*(bern (p+p))
                                       else  [1/2]*(bern (p&p)) + [1/2]*(q true).
 
@@ -52,7 +52,7 @@ rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
 rewrite Mif_eq; rewrite Flip_ctrue; rewrite Flip_cfalse; rewrite Munit_eq; auto.
 Qed.
 
-   
+
 
 Lemma Mubern_mon : forall (q: bool -> U), Fmonotonic (Mubern q).
 red; red; intros; unfold Mubern; auto.
@@ -60,14 +60,14 @@ case (dec_demi x); repeat Usimpl; auto.
 Qed.
 Hint Resolve Mubern_mon Mubern_eq.
 
-Lemma Bern_eq : 
+Lemma Bern_eq :
     forall q : bool -> U, forall p, mu (bernoulli p) q == mufix (Mubern q) p.
 intros; apply Ueq_sym.
-unfold bernoulli; apply mufix_mu with (muF:=(Mubern q)) (q:=fun (p:U) => q); auto. 
+unfold bernoulli; apply mufix_mu with (muF:=(Mubern q)) (q:=fun (p:U) => q); auto.
 Qed.
 Hint Resolve Bern_eq.
 
-Lemma Bern_commute : forall q : bool -> U, 
+Lemma Bern_commute : forall q : bool -> U,
    mu_muF_commute_le Fbern Fbern_mon (fun (x:U)=>q) (Mubern q).
 red; auto.
 Qed.
@@ -106,7 +106,7 @@ Hint Resolve MuBern_false.
 
 Lemma Bern_true : forall p, mu (bernoulli p) B2U == p.
 intros; unfold bernoulli.
-apply muF_eq with 
+apply muF_eq with
     (muFqinv:= Mubern (qinv (fun (x:U) => B2U) p))
     (muFq:=Mubern B2U)
     (q:=fun (x:U) => B2U)
@@ -127,7 +127,7 @@ Lemma Mubern_inv : forall (q: bool -> U) (f:U -> U) (p:U),
 intros; unfold Mubern,finv.
 case (dec_demi p); intro; auto.
 Qed.
- 
+
 (** *** Proofs using lubs *)
 (**   Invariant [pmin p]  $pmin(p)(n) = p - \frac{1}{2^n}$ *)
 
@@ -143,8 +143,8 @@ apply fixrule with (p:= fun p => (pmin p)); auto; intros.
 red; simpl; intros.
 unfold Fbern.
 red.
-setoid_rewrite 
- (Mif_eq Flip 
+setoid_rewrite
+ (Mif_eq Flip
    (if dec_demi x then Munit false else f (x & x))
    (if dec_demi x then f (x + x) else Munit true) (qtrue x)); simpl.
 case (dec_demi x); simpl; intros.
@@ -173,8 +173,8 @@ apply fixrule with (p:= fun p => pmin ([1-] p)); auto; intros.
 red; simpl; intros.
 unfold Fbern.
 red.
-setoid_rewrite 
- (Mif_eq Flip 
+setoid_rewrite
+ (Mif_eq Flip
    (if dec_demi x then Munit false else f (x & x))
    (if dec_demi x then f (x + x) else Munit true) (qfalse x)); simpl.
 case (dec_demi x); simpl; intros.
@@ -234,7 +234,7 @@ intros; apply Ueq_trans with (mu (bernoulli p) (fun b => f true * qtrue p b + f 
 apply mu_stable_eq.
 unfold feq,qtrue,qfalse,B2U,NB2U.
 destruct x; repeat Usimpl; auto.
-rewrite (mu_stable_plus (bernoulli p) (f:=fun b => f true * qtrue p b) 
+rewrite (mu_stable_plus (bernoulli p) (f:=fun b => f true * qtrue p b)
                                                           (g:=fun b => f false * qfalse p b)).
 rewrite (mu_stable_mult (bernoulli p) (f true) (qtrue p)).
 rewrite (mu_stable_mult (bernoulli p) (f false) (qfalse p)).
@@ -252,7 +252,7 @@ Qed.
 (**  $ (\mathrm{binomial}~p~n)$  gives $k$ with probability $C_k^n p^k(1-p)^{n-k}$ *)
 
 (** *** Definition and properties of binomial coefficients *)
-Fixpoint comb (k n:nat) {struct n} : nat := 
+Fixpoint comb (k n:nat) {struct n} : nat :=
          match n with O => match k with O => (1%nat) | (S l) => O end
                 | (S m) => match k with O => (1%nat)
                                                     | (S l) => ((comb l m) + (comb k m))%nat end
@@ -334,7 +334,7 @@ Lemma sigma_fc0 : forall n k,  sigma (fc 0 n) (S k) ==1.
 intros; rewrite sigma_S_lift.
 rewrite fcp_0; rewrite sigma_zero; repeat Usimpl; auto.
 Qed.
- 
+
 Lemma retract_class : forall f n, class (retract f n).
 unfold retract; red; intros.
 apply Ule_class; red; intros.
@@ -342,7 +342,7 @@ apply H; intro; auto.
 Qed.
 Hint Resolve retract_class.
 
-Lemma fc_retract : 
+Lemma fc_retract :
      forall p n, ([1-]p^n == sigma (fc p n) n) -> retract (fc p n) (S n).
 intros; apply (Ueq_orc p 0); intros; auto.
 red; intros.
@@ -358,7 +358,7 @@ rewrite fcp_n; auto.
 Qed.
 Hint Resolve fc_retract.
 
-Lemma fc_Nmult_def : 
+Lemma fc_Nmult_def :
      forall p n k, ([1-]p^n == sigma (fc p n) n) -> Nmult_def (comb k n) (p^k * ([1-]p) ^(n-k)).
 intros p n k Heq; destruct k.
 rewrite comb_0_n; auto.
@@ -380,10 +380,10 @@ rewrite comb_not_le; auto with arith.
 Qed.
 Hint Resolve fc_Nmult_def.
 
-Lemma fcp_S : 
+Lemma fcp_S :
     forall p n k, ([1-]p^n == sigma (fc p n) n) -> fc p (S n) (S k) == p * (fc p n k) + ([1-]p) * (fc p n (S k)).
 intros;
-assert (Hcase : (k<n \/ n=k \/ (S n)<=k)%nat); try omega. 
+assert (Hcase : (k<n \/ n=k \/ (S n)<=k)%nat); try omega.
 decompose sum Hcase.
 unfold fc; simpl.
 rewrite plus_Nmult_distr.
@@ -448,14 +448,14 @@ Hint Resolve Nmult_comb.
 Definition qk (k n:nat) : U := if eq_nat_dec k n then 1 else 0.
 
 (** *** Definition of binomial distribution *)
-Fixpoint binomial (p:U)(n:nat) {struct n}: distr nat := 
+Fixpoint binomial (p:U)(n:nat) {struct n}: distr nat :=
     match n with O => (Munit O)
-                     | S m => Mlet (binomial p m) 
+                     | S m => Mlet (binomial p m)
                                      (fun x => Mif (bernoulli p) (Munit (S x)) (Munit x))
     end.
 
 (** *** Properties of binomial distribution *)
-Lemma binomial_eq_k : 
+Lemma binomial_eq_k :
    forall p n k, mu (binomial p n) (qk k) == fc p n k.
 induction n; intros.
 (* case n = 0 *)
@@ -464,14 +464,14 @@ rewrite fcp_0; auto.
 (* cas n<>0 *)
 simpl binomial.
 simpl mu.
-apply Ueq_trans with 
+apply Ueq_trans with
 (star (mu (binomial p n))
   (fun x : nat =>
    star (mu (bernoulli p))
      (fun x0 : bool => mu (if x0 then Munit (S x) else Munit x))) (qk k));
 auto.
 unfold star.
-apply Ueq_trans with 
+apply Ueq_trans with
  (mu (binomial p n)
   (fun x : nat => p * (qk k (S x)) + ([1-]p) * (qk k x))).
 apply mu_stable_eq; red; intros.

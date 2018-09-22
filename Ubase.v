@@ -29,7 +29,7 @@ Notation "[1-]  x" := (Uinv x)  (at level 35, right associativity) : U_scope.
 Notation "0" := U0 : U_scope.
 Notation "1" := U1 : U_scope.
 Notation "[1/]1+ n" := (Unth n) (at level 35, right associativity) : U_scope.
-Open Local Scope U_scope.
+Local Open Scope U_scope.
 
 (** ** Basic Properties *)
 Axiom Ueq_refl : forall x:U, x == x.
@@ -47,13 +47,13 @@ Axiom Umult_sym : forall x y:U, x * y == y * x.
 Axiom Umult_assoc : forall x y z:U, x * (y * z) == x * y * z.
 Axiom Umult_one_left : forall x:U, 1 * x == x.
 
-Axiom Uinv_one : [1-] 1 == 0. 
+Axiom Uinv_one : [1-] 1 == 0.
 Axiom Uinv_opp_left : forall x, [1-] x + x == 1.
 
 (** Property  : $1 - (x+y) + x=1-y$ holds when $x+y$ does not overflow *)
 Axiom Uinv_plus_left : forall x y, y <= [1-] x -> [1-] (x + y) + x == [1-] y.
 
-(** Property  : $(x + y) \times z  = x \times z + y \times z$ 
+(** Property  : $(x + y) \times z  = x \times z + y \times z$
     holds when $x+y$ does not overflow *)
 Axiom Udistr_plus_right : forall x y z, x <= [1-] y -> (x + y) * z == x * z + y * z.
 
@@ -71,7 +71,7 @@ Axiom Ule_antisym : forall x y:U, x <= y -> y <= x -> x == y.
 Axiom Ule_class : forall x y : U, class (x <= y).
 
 Axiom Ule_total : forall x y : U, orc (x<=y) (y<=x).
-Implicit Arguments Ule_total [].
+Arguments Ule_total : clear implicits.
 
 (** The relation $x\leq y$ is compatible with operators *)
 Axiom Uplus_le_compat_left : forall x y z:U, x <= y -> x + z <= y + z.
@@ -103,4 +103,3 @@ Axiom lub_eq_plus_cte_right : forall (f:nat->U) (k:U), lub (fun n => (f n) + k) 
 Axiom lub_eq_mult : forall (k:U) (f:nat->U), lub (fun n => k * (f n)) ==  k * lub f.
 
 End Universe.
-

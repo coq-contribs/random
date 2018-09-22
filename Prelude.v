@@ -5,9 +5,9 @@ Set Implicit Arguments.
 (** ** Definition of iterator [comp]
    [comp f u n x] is defined as $(f~(u~(n-1)).. (f (u~ 0)~x))$ *)
 
-Fixpoint comp (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A) (n:nat) {struct n}: A := 
+Fixpoint comp (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A) (n:nat) {struct n}: A :=
    match n with O => x| (S p) => f (u p) (comp f x u p) end.
-      
+
 Lemma comp0 : forall (A:Type) (f : A -> A -> A) (x : A) (u : nat -> A), comp f x u 0 = x.
 trivial.
 Qed.
@@ -18,10 +18,10 @@ trivial.
 Qed.
 
 (** ** Monotonicity of sequences for an arbitrary relation *)
-Definition mon_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A) 
+Definition mon_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A)
   :=  forall n m, (n <= m) -> (le (f n) (f m)).
 
-Definition decr_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A) 
+Definition decr_seq (A:Type) (le : A -> A -> Prop) (f:nat ->A)
   :=  forall n m, (n <= m) -> (le (f m) (f n)).
 
 
@@ -63,11 +63,11 @@ Hint Resolve orc_left orc_right.
 Lemma class_orc : forall A B, class (orc A B).
 repeat red; intros.
 apply H0; red; intro.
-apply H; red; intro. 
+apply H; red; intro.
 apply H3; apply H4; auto.
 Qed.
 
-Implicit Arguments class_orc [].
+Arguments class_orc : clear implicits.
 
 Lemma orc_intro : forall A B, ( ~A -> ~B -> False) -> orc A B.
 intros; apply class_orc; red; intros.
@@ -84,7 +84,7 @@ apply H; red; intro.
 intuition.
 Qed.
 
-Definition exc (A :Type)(P:A->Prop) := 
+Definition exc (A :Type)(P:A->Prop) :=
    forall C:Prop, class C -> (forall x:A, P x ->C) -> C.
 
 Lemma exc_intro : forall (A :Type)(P:A->Prop) (x:A), P x -> exc P.
@@ -94,7 +94,7 @@ Qed.
 Lemma class_exc : forall (A :Type)(P:A->Prop), class (exc P).
 repeat red; intros.
 apply H0; clear H0; red; intro.
-apply H; clear H; red; intro H2. 
+apply H; clear H; red; intro H2.
 apply H2; intros; auto.
 apply H0; apply (H1 x); auto.
 Qed.

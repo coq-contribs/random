@@ -1,7 +1,7 @@
 (** * Carac.v: Characteristic functions *)
 Require Export Prog.
 Set Implicit Arguments.
-Unset Standard Proposition Elimination Names.
+
 Require Export Sets.
 Require Export Arith.
 Module CaracFun (Univ:Universe).
@@ -86,7 +86,7 @@ Defined.
 
 Lemma carac_union : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(Qdec : dec Q),
 feq  (carac (union_dec Pdec Qdec)) (fun a => (carac Pdec a) + (carac Qdec a)).
-red; unfold carac; intros. 
+red; unfold carac; intros.
 unfold union_dec; case (Pdec x); intuition; case (Qdec x); intuition.
 Qed.
 
@@ -97,7 +97,7 @@ Defined.
 
 Lemma carac_inter : forall (A:Type)(P Q:A -> Prop)(Pdec : dec P)(Qdec : dec Q),
 feq  (carac (inter_dec Pdec Qdec)) (fun a => (carac Pdec a) * (carac Qdec a)).
-red; unfold carac; intros. 
+red; unfold carac; intros.
 unfold inter_dec; case (Pdec x); intuition; case (Qdec x); intuition.
 Qed.
 
@@ -108,7 +108,7 @@ Defined.
 
 Lemma carac_compl : forall (A:Type)(P:A -> Prop)(Pdec : dec P),
 feq  (carac (compl_dec Pdec)) (fun a => [1-](carac Pdec a)).
-red; unfold carac; intros. 
+red; unfold carac; intros.
 unfold compl_dec; case (Pdec x); intuition.
 Qed.
 
@@ -119,7 +119,7 @@ Defined.
 
 Lemma carac_empty : forall (A:Type)(P:A->Prop)
        (empP:equiv P (empty A)),feq (carac (empty_dec empP)) (f_zero A).
-red; unfold carac; intros. 
+red; unfold carac; intros.
 unfold empty_dec; intuition.
 Qed.
 
@@ -178,7 +178,7 @@ match n with
   | S n => if Pdec n then (S (nb_elts Pdec n)) else (nb_elts Pdec n)
 end.
 
-(** the probability for a random number between 0 and n to satisfy P is equal 
+(** the probability for a random number between 0 and n to satisfy P is equal
      to the number of elements below n which satisfy P divided by n+1 *)
 
 Lemma random_carac : forall (P:nat -> Prop)(Pdec : dec P)(n:nat),
@@ -189,7 +189,7 @@ rewrite sigma_S.
 rewrite H; unfold carac;case (Pdec n0); Usimpl; auto.
 Qed.
 
-Lemma mu_carac_inv : forall (A:Type)(P:A->Prop)(Pdec:dec P)(notPdec : dec (fun x => ~ (P x))) 
+Lemma mu_carac_inv : forall (A:Type)(P:A->Prop)(Pdec:dec P)(notPdec : dec (fun x => ~ (P x)))
      (m : distr A), mu m (carac Pdec) == mu m (finv (carac notPdec)).
 intros; apply (mu_stable_eq m); red; intros.
 unfold finv,carac.
@@ -206,19 +206,19 @@ Section RandomFinite.
 (** ** Uniform measure on finite sets *)
 
 (** *** Distribution for [random_fin P] over $\{k:nat | k \leq n\}$
-The distribution associated to [random_fin P] is 
+The distribution associated to [random_fin P] is
        $f \mapsto \Sigma_{a\in P} \frac{f(a)}{n+1}$
        with $n+1$ the size of $P$
        we cannot factorize $\frac{1}{n+1}$ because of possible overflow *)
 
-Fixpoint sigma_fin (f:A->U)(P:A->Prop)(FP:finite P){struct FP}:U := 
+Fixpoint sigma_fin (f:A->U)(P:A->Prop)(FP:finite P){struct FP}:U :=
 match FP with
   | (fin_eq_empty eq) => 0
   | (fin_eq_add x Q nQx FQ eq) => (f x) + sigma_fin f FQ
 end.
 
 
-Definition retract_fin (P:A->Prop) (f:A->U) := 
+Definition retract_fin (P:A->Prop) (f:A->U) :=
      forall Q (FQ: finite Q), incl Q P -> forall x, ~(Q x) -> (P x) -> f x <= [1-](sigma_fin f FQ).
 
 Lemma retract_fin_incl : forall P Q f, retract_fin P f -> incl Q P -> retract_fin Q f.
@@ -236,7 +236,7 @@ intros; case (e x0); unfold add in *; intuition.
 apply H; case (e x); unfold add in *; intuition.
 Qed.
 
-Lemma sigma_fin_eq_compat : 
+Lemma sigma_fin_eq_compat :
 forall (f g : A -> U)(P:A->Prop)(FP:finite P),
        (forall x, P x -> (f x)==(g x))-> sigma_fin f FP == sigma_fin g FP.
 intros; apply Ule_antisym; apply sigma_fin_monotonic; auto.
@@ -244,7 +244,7 @@ intros; rewrite (H x); auto.
 Qed.
 
 
-Lemma retract_fin_le : forall (P:A->Prop) (f g:A->U), 
+Lemma retract_fin_le : forall (P:A->Prop) (f g:A->U),
         (forall x, P x -> f x <= g x) -> retract_fin P g -> retract_fin P f.
 unfold retract_fin; intros.
 apply Ule_trans with (g x); auto.
@@ -274,13 +274,13 @@ repeat norm_assoc_left; repeat Usimpl.
 repeat norm_assoc_right; repeat Usimpl; auto.
 Qed.
 
-Lemma sigma_fin_prod_maj : 
+Lemma sigma_fin_prod_maj :
 forall (f g : A -> U)(P:A->Prop)(FP:finite P),
        sigma_fin (fun k  => f k * g k) FP <= sigma_fin f FP.
 induction FP; simpl; auto.
 Qed.
 
-Lemma sigma_fin_prod_le : 
+Lemma sigma_fin_prod_le :
 forall (f g : A -> U) (c:U) , (forall k, f k <= c) -> forall (P:A->Prop)(FP:finite P),
 retract_fin P g -> sigma_fin (fun k  => f k * g k) FP <= c * sigma_fin g FP.
 induction FP; simpl; intros.
@@ -295,7 +295,7 @@ rewrite Udistr_plus_left; auto.
 case (e x); intuition.
 Qed.
 
-Lemma sigma_fin_prod_ge : 
+Lemma sigma_fin_prod_ge :
 forall (f g : A -> U) (c:U) , (forall k, c <= f k) -> forall (P:A->Prop)(FP:finite P),
 retract_fin P g -> c * sigma_fin g FP <= sigma_fin (fun k  => f k * g k) FP.
 induction FP; simpl; intros.
@@ -330,7 +330,7 @@ repeat Usimpl; auto.
 apply Uinv_le_perm_right.
 rewrite (Udistr_inv_left (f x) (g x)).
 repeat norm_assoc_right; apply Uplus_le_compat_right.
-apply Ule_trans with 
+apply Ule_trans with
   (sigma_fin f FP + [1-] (f x + sigma_fin f FP)); repeat Usimpl.
 apply (sigma_fin_prod_maj f (fun k => [1-](g k)) FP).
 
@@ -362,7 +362,7 @@ Lemma sigma_fin_equiv : forall f P Q  (FP:finite P) (e:equiv P Q),
 induction FP; simpl; intros; auto.
 Qed.
 
-Lemma sigma_fin_rem : forall f P (FP:finite P) a, 
+Lemma sigma_fin_rem : forall f P (FP:finite P) a,
              P a -> sigma_fin f FP == f a + sigma_fin f (finite_rem decA a FP).
 induction FP;  intuition.
 case (equiv_empty_false a e);auto.
@@ -420,7 +420,7 @@ apply sigma_fin_incl; auto.
 apply sigma_fin_incl; auto.
 Qed.
 
-Lemma sigma_fin_cte : forall c P (FP:finite P), 
+Lemma sigma_fin_cte : forall c P (FP:finite P),
        sigma_fin (fun _ => c) FP == (size FP) */ c.
 induction FP; auto.
 simpl sigma_fin; simpl size; rewrite IHFP; auto.
@@ -445,7 +445,7 @@ Qed.
 
 Definition random_fin :M A := fun (f:A->U) => sigma_fin (fun k => Unth s *  f k) FP.
 
-Lemma fnth_retract_fin: 
+Lemma fnth_retract_fin:
        forall n, (size FP<=S n)%nat -> (retract_fin P (fun _ => [1/]1+n)).
 red; intros.
 rewrite sigma_fin_cte.
@@ -470,7 +470,7 @@ Qed.
 Lemma random_fin_stable_plus : stable_plus random_fin.
 unfold random_fin, stable_plus, fplus; intros; auto.
 unfold fplusok, fle, finv in H.
-apply Ueq_trans with 
+apply Ueq_trans with
  (sigma_fin (fun k => ([1/]1+s * f k) + ([1/]1+s  * g k)) FP).
 apply sigma_fin_eq_compat; intros; auto.
 apply sigma_fin_plus with (f:=fun k => Unth s * f k)
@@ -511,8 +511,8 @@ rewrite pred_size_eq; auto.
 Qed.
 End RandomFinite.
 
-Lemma random_fin_carac : 
-    forall P Q (FP:finite P) (decQ:dec Q), 
+Lemma random_fin_carac :
+    forall P Q (FP:finite P) (decQ:dec Q),
          mu (Random_fin FP) (carac decQ) == size (finite_inter decQ FP) */ [1/]1+(size FP-1)%nat.
 intros; simpl mu.
 unfold random_fin.
@@ -527,7 +527,7 @@ rewrite Nmult_S; auto.
 repeat Usimpl; rewrite size_inter_add_notin; auto.
 Qed.
 
-Lemma random_fin_P : forall P (FP:finite P) (decP:dec P), 
+Lemma random_fin_P : forall P (FP:finite P) (decP:dec P),
          notempty P -> mu (Random_fin FP) (carac decP) ==1.
 intros; rewrite random_fin_carac.
 rewrite (size_inter_incl decA decP FP FP); auto.
@@ -537,4 +537,3 @@ Qed.
 
 End SigmaFinite.
 End CaracFun.
-
