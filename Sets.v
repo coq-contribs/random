@@ -1,7 +1,7 @@
 Global Set Asymmetric Patterns.
+
 Set Implicit Arguments.
 Set Strict Implicit.
-Unset Standard Proposition Elimination Names.
 Require Export Setoid.
 Require Import Omega.
 
@@ -9,7 +9,7 @@ Require Import Omega.
 
 Section sets.
 Variable A : Type.
-Variable decA : forall x y :A, {x=y}+{x<>y}. 
+Variable decA : forall x y :A, {x=y}+{x<>y}.
 
 Definition set := A->Prop.
 Definition full : set := fun (x:A) => True.
@@ -24,8 +24,8 @@ Definition rem (a:A) (P:set) :set := fun (x:A) => x<>a /\ (P x).
 (** ** Equivalence *)
 Definition equiv (P Q:set) := forall (x:A), P x <-> Q x.
 
-Implicit Arguments full [].
-Implicit Arguments empty [].
+Arguments full : clear implicits.
+Arguments empty : clear implicits.
 
 Lemma equiv_refl : forall P:set, equiv P P.
 unfold equiv; intuition.
@@ -35,7 +35,7 @@ Lemma equiv_sym : forall P Q:set, equiv P Q -> equiv Q P.
 unfold equiv; firstorder.
 Qed.
 
-Lemma equiv_trans : forall P Q R:set, 
+Lemma equiv_trans : forall P Q R:set,
    equiv P Q -> equiv Q R -> equiv P R.
 unfold equiv; firstorder.
 Qed.
@@ -49,29 +49,35 @@ split; red; auto.
 exact equiv_trans.
 Qed.
 
-Add Setoid set equiv set_setoid as Set_setoid.
+Add Parametric Relation : set equiv
+    reflexivity proved by equiv_refl
+    symmetry proved by equiv_sym
+    transitivity proved by equiv_trans as Set_setoid.
 
-Add Morphism add : equiv_add.
+Add Parametric Morphism : add
+    with signature (@eq A) ==> (equiv) ==> (equiv) as equiv_add.
 unfold equiv,add; firstorder.
 Qed.
 
-Add Morphism rem : equiv_rem.
+Add Parametric Morphism : rem
+  with signature (@eq A) ==> (equiv) ==> (equiv) as equiv_rem.
 unfold equiv,rem; firstorder.
 Qed.
 Hint Resolve equiv_add equiv_rem.
 
-Add Morphism union : equiv_union.
+Add Parametric Morphism : union
+  with signature (equiv) ==> (equiv) ==> (equiv) as equiv_union.
 unfold equiv,union; firstorder.
 Qed.
 Hint Immediate equiv_union.
 
-Lemma equiv_union_left : 
+Lemma equiv_union_left :
   forall P1 Q P2,
    equiv P1 P2 -> equiv (union P1 Q) (union P2 Q).
 auto.
 Qed.
 
-Lemma equiv_union_right : 
+Lemma equiv_union_right :
   forall P Q1 Q2 ,
    equiv Q1 Q2 -> equiv (union P Q1) (union P Q2).
 auto.
@@ -79,12 +85,14 @@ Qed.
 
 Hint Resolve equiv_union_left equiv_union_right.
 
-Add Morphism inter : equiv_inter.
+Add Parametric Morphism : inter
+    with signature (equiv) ==> (equiv) ==> (equiv) as equiv_inter.
 unfold equiv,inter; firstorder.
 Qed.
 Hint Immediate equiv_inter.
 
-Add Morphism compl : equiv_compl.
+Add Parametric Morphism : compl
+    with signature (equiv) ==> (equiv) as equiv_compl.
 unfold equiv,compl; firstorder.
 Qed.
 Hint Resolve equiv_compl.
@@ -95,7 +103,7 @@ Qed.
 
 (** ** Finite sets given as an enumeration of elements *)
 
-Inductive finite (P: set) : Type := 
+Inductive finite (P: set) : Type :=
    fin_eq_empty : equiv P empty -> finite P
  | fin_eq_add : forall (x:A)(Q:set),
              ~ Q x-> finite Q -> equiv P (add x Q) -> finite P.
@@ -149,7 +157,7 @@ Lemma incl_refl : forall (P:set), incl P P.
 unfold incl; intuition.
 Qed.
 
-Lemma incl_trans : forall (P Q R:set), 
+Lemma incl_trans : forall (P Q R:set),
 incl P Q -> incl Q R -> incl P R.
 unfold incl; intuition.
 Qed.
@@ -162,13 +170,13 @@ Lemma equiv_incl_sym : forall (P Q : set), equiv P Q -> incl Q P.
 unfold equiv, incl; firstorder.
 Qed.
 
-Lemma equiv_incl_intro : 
+Lemma equiv_incl_intro :
 forall (P Q : set), incl P Q -> incl Q P -> equiv P Q.
 unfold equiv, incl; firstorder.
 Qed.
 
-Hint Resolve incl_refl incl_trans equiv_incl_intro. 
-Hint Immediate equiv_incl equiv_incl_sym. 
+Hint Resolve incl_refl incl_trans equiv_incl_intro.
+Hint Immediate equiv_incl equiv_incl_sym.
 
 (** ** Properties of operations on sets *)
 
@@ -199,23 +207,23 @@ Lemma incl_add_stable :   forall a P Q, incl P Q -> incl (add a P) (add a Q).
 unfold incl,add;intuition.
 Qed.
 
-Lemma incl_rem_add_iff : 
+Lemma incl_rem_add_iff :
   forall a P Q, incl (rem a P) Q <-> incl P (add a Q).
 unfold rem, add, incl; intuition.
 case (decA x a); auto.
 case (H x); intuition.
 Qed.
 
-Lemma incl_rem_add: 
-  forall (a:A) (P Q:set), 
+Lemma incl_rem_add:
+  forall (a:A) (P Q:set),
      (P a) -> incl Q (rem a P) -> incl (add a Q) P.
 unfold rem, add, incl; intros; auto.
 case H1; intro; subst; auto.
 case (H0 x); auto.
 Qed.
 
-Lemma incl_add_rem : 
-  forall (a:A) (P Q:set), 
+Lemma incl_add_rem :
+  forall (a:A) (P Q:set),
      ~ Q a -> incl (add a Q) P -> incl Q (rem a P) .
 unfold rem, add, incl; intros; auto.
 case (decA x a); intros; auto.
@@ -224,16 +232,16 @@ Qed.
 
 Hint Immediate incl_rem_add incl_add_rem.
 
-Lemma equiv_rem_add : 
- forall (a:A) (P Q:set), 
+Lemma equiv_rem_add :
+ forall (a:A) (P Q:set),
      (P a) -> equiv Q (rem a P)  -> equiv (add a Q) P.
 intros; assert (incl Q (rem a P)); auto.
 assert (incl (rem a P) Q); auto.
 case (incl_rem_add_iff a P Q); auto.
 Qed.
 
-Lemma equiv_add_rem : 
- forall (a:A) (P Q:set), 
+Lemma equiv_add_rem :
+ forall (a:A) (P Q:set),
      ~ Q a -> equiv (add a Q) P -> equiv Q (rem a P).
 intros; assert (incl (add a Q) P); auto.
 assert (incl P (add a Q)); auto.
@@ -242,20 +250,20 @@ Qed.
 
 Hint Immediate equiv_rem_add equiv_add_rem.
 
-Lemma add_rem_eq_equiv : 
+Lemma add_rem_eq_equiv :
   forall x (P:set), equiv (add x (rem x P)) (add x P).
 unfold equiv, add, rem; intuition.
 case (decA x0 x); intuition.
 Qed.
 
-Lemma add_rem_diff_equiv : 
-  forall x y (P:set), 
+Lemma add_rem_diff_equiv :
+  forall x y (P:set),
   x<>y -> equiv (add x (rem y P)) (rem y (add x P)).
 unfold equiv, add, rem; intuition.
 subst; auto.
 Qed.
 
-Lemma add_equiv_in : 
+Lemma add_equiv_in :
   forall x (P:set), P x -> equiv (add x P) P.
 unfold equiv, add; intuition.
 subst;auto.
@@ -264,25 +272,25 @@ Qed.
 Hint Resolve add_rem_eq_equiv add_rem_diff_equiv add_equiv_in.
 
 
-Lemma add_rem_equiv_in : 
+Lemma add_rem_equiv_in :
   forall x (P:set), P x -> equiv (add x (rem x P)) P.
 intros; apply equiv_trans with (add x P); auto.
 Qed.
 
 Hint Resolve add_rem_equiv_in.
 
-Lemma rem_add_eq_equiv : 
+Lemma rem_add_eq_equiv :
   forall x (P:set), equiv (rem x (add x P)) (rem x P).
 unfold equiv, add, rem; intuition.
 Qed.
 
-Lemma rem_add_diff_equiv : 
-  forall x y (P:set), 
+Lemma rem_add_diff_equiv :
+  forall x y (P:set),
   x<>y -> equiv (rem x (add y P)) (add y (rem x P)).
 intros; apply equiv_sym; auto.
 Qed.
 
-Lemma rem_equiv_notin : 
+Lemma rem_equiv_notin :
   forall x (P:set), ~P x -> equiv (rem x P) P.
 unfold equiv, rem; intuition.
 subst;auto.
@@ -290,7 +298,7 @@ Qed.
 
 Hint Resolve rem_add_eq_equiv rem_add_diff_equiv rem_equiv_notin.
 
-Lemma rem_add_equiv_notin : 
+Lemma rem_add_equiv_notin :
   forall x (P:set), ~P x -> equiv (rem x (add x P)) P.
 intros; apply equiv_trans with (rem x P); auto.
 Qed.
@@ -435,8 +443,8 @@ subst; unfold rem; intuition.
 apply equiv_trans with (rem a (add x Q)); auto.
 Defined.
 
-Lemma size_finite_rem: 
-   forall (P:set) (a:A) (f:finite P), 
+Lemma size_finite_rem:
+   forall (P:set) (a:A) (f:finite P),
     (P a) -> size f = S (size (finite_rem a f)).
 induction f;  intros.
 case (equiv_empty_false a e H).
@@ -449,8 +457,8 @@ case n0; auto.
 Qed.
 
 (* bug lie a intuition
-Lemma size_finite_rem: 
-   forall (P:set) (a:A) (f:finite P), 
+Lemma size_finite_rem:
+   forall (P:set) (a:A) (f:finite P),
     (P a) -> size f = S (size (finite_rem a f)).
 induction f;  intuition.
 case (equiv_empty_false a e H).
@@ -462,10 +470,10 @@ case (e a); unfold add; intuition.
 case f0; auto.
 Qed.
 *)
-Require Import Arith.
+Import Arith.
 
-Lemma size_incl : 
-  forall (P:set)(f:finite P) (Q:set)(g:finite Q), 
+Lemma size_incl :
+  forall (P:set)(f:finite P) (Q:set)(g:finite Q),
   (incl P Q)-> size f <= size g.
 induction f; simpl; intros; auto with arith.
 apply le_trans with (S (size (finite_rem x g))).
@@ -478,8 +486,8 @@ rewrite <- size_finite_rem; auto.
 case (e x); intuition.
 Qed.
 
-Lemma size_unique : 
-  forall (P:set)(f:finite P) (Q:set)(g:finite Q), 
+Lemma size_unique :
+  forall (P:set)(f:finite P) (Q:set)(g:finite Q),
   (equiv P Q)-> size f = size g.
 intros; apply le_antisym; apply size_incl; auto.
 Qed.
@@ -525,22 +533,22 @@ apply equiv_sym; auto.
 apply fin_add; auto.
 Defined.
 
-Lemma finite_union : 
+Lemma finite_union :
      forall P Q, finite P -> finite Q -> finite (union P Q).
 intros P Q FP FQ; elim FP; intros.
 apply fin_equiv with Q; auto.
 apply equiv_trans with (union empty Q); auto.
 apply fin_equiv with (add x (union Q0 Q)); auto.
-apply equiv_trans with (union (add x Q0) Q); auto. 
+apply equiv_trans with (union (add x Q0) Q); auto.
 apply fin_add_in; auto.
 Defined.
- 
+
 Lemma finite_full_dec : forall P:set, finite full -> dec P -> finite P.
 intros; apply finite_incl with full; auto.
 unfold full,incl; auto.
 Qed.
 
-Require Import Lt.
+Import Lt.
 
 (** *** Filter operation *)
 
@@ -561,19 +569,19 @@ unfold add,inter; red; intuition.
 subst; intuition.
 Defined.
 
-Lemma size_inter_empty : forall P Q (decP:dec P) (e:equiv Q empty), 
+Lemma size_inter_empty : forall P Q (decP:dec P) (e:equiv Q empty),
    size (finite_inter decP (fin_eq_empty e))=O.
 trivial.
 Qed.
 
-Lemma size_inter_add_in : 
+Lemma size_inter_add_in :
      forall P Q R (decP:dec P)(x:A)(nq:~Q x)(FQ:finite Q)(e:equiv R (add x Q)),
       P x ->size (finite_inter decP (fin_eq_add nq FQ e))=S (size (finite_inter decP FQ)).
 intros; simpl.
 case (decP x); intro; trivial; contradiction.
 Qed.
 
-Lemma size_inter_add_notin : 
+Lemma size_inter_add_notin :
      forall P Q R (decP:dec P)(x:A)(nq:~Q x)(FQ:finite Q)(e:equiv R (add x Q)),
    ~ P x -> size (finite_inter decP (fin_eq_add nq FQ e))=size (finite_inter decP FQ).
 intros; simpl.
@@ -581,7 +589,7 @@ case (decP x); intro; try contradiction.
 rewrite size_equiv; trivial.
 Qed.
 
-Lemma size_inter_incl : forall P Q (decP:dec P)(FP:finite P)(FQ:finite Q), 
+Lemma size_inter_incl : forall P Q (decP:dec P)(FP:finite P)(FQ:finite Q),
     (incl P Q) -> size (finite_inter decP FQ)=size FP.
 intros; apply size_unique.
 unfold inter; intro.
@@ -590,11 +598,11 @@ Qed.
 
 (** *** Selecting elements in a finite set *)
 
-Fixpoint nth_finite (P:set) (k:nat) (PF : finite P) {struct PF}: (k < size PF) -> A := 
-  match PF as F return (k < size F) -> A with 
+Fixpoint nth_finite (P:set) (k:nat) (PF : finite P) {struct PF}: (k < size PF) -> A :=
+  match PF as F return (k < size F) -> A with
        fin_eq_empty H => (fun (e : k<0) => match lt_n_O k e with end)
-     | fin_eq_add x Q nqx fq eqq => 
-           match k as k0 return k0<S (size fq)->A with 
+     | fin_eq_add x Q nqx fq eqq =>
+           match k as k0 return k0<S (size fq)->A with
                 O => fun e => x
          | (S k1) => fun (e:S k1<S (size fq)) => nth_finite fq (lt_S_n k1 (size fq) e)
            end
@@ -634,7 +642,7 @@ incl_rem_stable incl_add_stable.
 
 Hint Constructors finite.
 Hint Resolve add_in add_in_eq add_intro add_incl add_incl_intro union_sym union_empty_left union_empty_right
-union_add_left union_add_right finite_union equiv_union_left 
+union_add_left union_add_right finite_union equiv_union_left
 equiv_union_right.
-Implicit Arguments full [].
-Implicit Arguments empty [].
+Arguments full : clear implicits.
+Arguments empty : clear implicits.

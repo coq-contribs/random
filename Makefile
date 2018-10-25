@@ -1,16 +1,11 @@
-all: Makefile.coq
-	+make -f Makefile.coq all
+all: build
 
-clean: Makefile.coq
-	+make -f Makefile.coq clean
-	rm -f Makefile.coq
+CoqMakefile: _CoqProject
+	coq_makefile -f _CoqProject -o CoqMakefile
 
-Makefile.coq: Make
-	$(COQBIN)coq_makefile -f Make -o Makefile.coq
+build: CoqMakefile
+	make -f CoqMakefile
 
-Make: ;
-
-%: Makefile.coq
-	+make -f Makefile.coq $@
-
-.PHONY: all clean
+clean: CoqMakefile
+	make -f CoqMakefile clean
+	rm CoqMakefile

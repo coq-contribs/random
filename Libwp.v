@@ -82,11 +82,14 @@ setoid_replace (mu m (finv f)) with (mu m (finv (fplus f g)) + mu m g).
 rewrite Uinv_plus_right; auto.
 apply Ule_trans with ([1-]mu m (finv g)); try Usimpl; auto.
 apply mu_monotonic; auto.
+unfold fplusok in H; apply fle_trans with (g := finv g); auto.
+apply finv_fle_compat; unfold Basics.flip; auto.
 apply Ueq_trans with (mu m (fplus (finv (fplus f g)) g)).
-apply mu_stable_eq; unfold fplusok,fle,finv in H; 
+apply mu_stable_eq; unfold fplusok,fle,finv in H;
 unfold feq,fplus,finv; intros.
 rewrite Uinv_plus_right; auto.
 apply (mu_stable_plus m); auto.
+unfold fplusok; apply finv_fle_compat; unfold Basics.flip; auto.
 Qed.
 
 Lemma lib_plus_right : forall m f g, fplusok f g -> lib m (fplus f g) == mu m f + lib m g.
@@ -98,9 +101,9 @@ apply lib_plus_left; auto.
 Qed.
 
 Definition okl (p : U) (m : distr A) (q : A -> U) := p <= lib m q.
-  
+
 End LibDefProp.
-Hint Resolve lib_one lib_inv lib_monotonic le_mu_lib lib_stable_eq 
+Hint Resolve lib_one lib_inv lib_monotonic le_mu_lib lib_stable_eq
                     mu_lib_le_esp le_lib_mu lib_le_esp lib_plus_left lib_plus_right.
 
 
@@ -112,14 +115,14 @@ Lemma lib_unit : forall (x:A) (p : A -> U), lib (Munit x) p == p x.
 intros; compute; auto.
 Qed.
 
-Lemma lib_let : forall (m : distr A) (M : A -> distr B) (p : B -> U), 
+Lemma lib_let : forall (m : distr A) (M : A -> distr B) (p : B -> U),
         lib (Mlet m M) p == lib m (fun x => lib (M x) p).
 intros; compute; Usimpl.
 destruct m.
 apply (monotonic_stable_eq mu_monotonic0); auto.
 Qed.
 
-Lemma lib_if : forall (mb:distr bool) (m1 m2 : distr A) (p : A -> U), 
+Lemma lib_if : forall (mb:distr bool) (m1 m2 : distr A) (p : A -> U),
         lib (Mif mb m1 m2) p == lib mb (fun b => if b then lib m1 p else lib m2 p).
 intros; compute; Usimpl.
 destruct mb.
@@ -127,26 +130,26 @@ apply (monotonic_stable_eq mu_monotonic0).
 red; destruct x; auto.
 Qed.
 
-(** *** Rules for liberal fixpoints 
-with $\phi(x)=F(\phi)(x)$, 
+(** *** Rules for liberal fixpoints
+with $\phi(x)=F(\phi)(x)$,
 
 $\bfrac{\forall f, (\forall x, \okl{p(x)}{f}{q}) \Ra \forall x, \okl{p(x)}{F(f)(x)}{q}}%
      {\forall x, \okl{p~x}{\phi(x)}{q}}$
 *)
 Section Fixrules.
 
-Definition oklfun (p : A->U) (m : A->distr B) (q : A -> B-> U) := 
+Definition oklfun (p : A->U) (m : A->distr B) (q : A -> B-> U) :=
      forall x, p x <= lib (m x) (q x).
 
-Definition uplfun (p : A->U) (m : A->distr B) (q : A -> B-> U) := 
+Definition uplfun (p : A->U) (m : A->distr B) (q : A -> B-> U) :=
      forall x, lib (m x) (q x) <= p x.
 
 Variable F : (A -> distr B) -> A -> distr B.
 
-Hypothesis F_mon : forall f g : A -> (distr B), 
+Hypothesis F_mon : forall f g : A -> (distr B),
   (forall x, le_distr (f x) (g x)) -> forall x, le_distr (F f x) (F g x).
 
-Lemma libfixrule : 
+Lemma libfixrule :
    forall p q,
    (forall (f:A->distr B), oklfun p f q -> oklfun p (fun x => F f x) q)
    -> oklfun p (Mfix F F_mon) q.
@@ -162,13 +165,13 @@ Variable p : A -> nat -> U.
 Hypothesis p1 : forall x, p x O == 1.
 Variable q : A -> B -> U.
 
-Lemma up_libfixrule : 
-   (forall (i:nat)(f:A->distr B), uplfun (fun x => p x i) f q 
+Lemma up_libfixrule :
+   (forall (i:nat)(f:A->distr B), uplfun (fun x => p x i) f q
                                         -> uplfun (fun x => p x (S i)) (fun x => F f x) q)
    -> uplfun (fun x => glb (p x)) (Mfix F F_mon) q.
 red; intros.
-assert (forall n:nat, 
-        (uplfun (fun x => (p x n)) 
+assert (forall n:nat,
+        (uplfun (fun x => (p x n))
         (fun x => (iter F n x)) q)).
 induction n; simpl; auto.
 repeat red; intros; auto.
@@ -188,7 +191,7 @@ End UplibFixRule.
 
 (** *** Invariant rules *)
 
-Section Fix_nuF. 
+Section Fix_nuF.
 
 
 Variable nuF :  (A -> U) -> A -> U.
@@ -201,7 +204,7 @@ Lemma nuF_stable : Fstable nuF.
 auto.
 Qed.
 
-Hypothesis F_nuF_eq : 
+Hypothesis F_nuF_eq :
     forall f x, lib (F f x) (q x) == nuF (fun y => lib (f y) (q y)) x.
 
 Lemma nufix_lib : forall x, nufix nuF x == lib (Mfix F F_mon x) (q x).
@@ -218,13 +221,13 @@ repeat red; unfold lib; auto.
 Qed.
 Hint Resolve nufix_lib.
 
-Lemma nuF_le : forall f, fle f (nuF f) 
+Lemma nuF_le : forall f, fle f (nuF f)
         -> forall x, f x <= lib (Mfix F F_mon x) (q x).
 intros; apply Ule_trans with (nufix nuF x); auto.
 apply nufix_inv; auto.
 Qed.
 
-Lemma nuF_muF_le : forall f, fle f (nuF f) 
+Lemma nuF_muF_le : forall f, fle f (nuF f)
      -> forall x, f x & pterm F F_mon x <= mu (Mfix F F_mon x) (q x).
 intros; apply Ule_trans with (lib (Mfix F F_mon x) (q x) & pterm F F_mon x).
 apply Uesp_le_compat;auto.
@@ -236,25 +239,25 @@ Qed.
 Hint Resolve nuF_muF_le.
 
 
-Lemma muF_pterm_le : 
-          forall f, fle (fplus f (finv (pterm F F_mon))) (nuF (fplus f (finv (pterm F F_mon)))) 
+Lemma muF_pterm_le :
+          forall f, fle (fplus f (finv (pterm F F_mon))) (nuF (fplus f (finv (pterm F F_mon))))
      -> fle f (pterm F F_mon) -> forall x, f x <= mu (Mfix F F_mon x) (q x).
 intros; apply Ule_trans with ((f x + [1-](pterm F F_mon x)) & pterm F F_mon x).
 rewrite (Uplus_inv_esp_simpl); auto.
 apply nuF_muF_le with (f:= fun x => f x + [1-] pterm F F_mon x); auto.
 Qed.
 
-End Fix_nuF. 
+End Fix_nuF.
 
 
 (** *** Case nuF is parametric in q *)
 Variable nuF : (A->B->U) -> (A -> U) -> A -> U.
 Hypothesis nuF_mon : forall q, Fmonotonic (nuF q).
 
-Hypothesis nuF_q_monotonic : 
+Hypothesis nuF_q_monotonic :
     forall q1 q2 f, (forall x y, q1 x y <= q2 x y) -> fle (nuF q1 f)  (nuF q2 f).
 
-Lemma nuF_q_eq_stable : 
+Lemma nuF_q_eq_stable :
     forall q1 q2 f, (forall x y, q1 x y == q2 x y) -> feq (nuF q1 f) (nuF q2 f).
 auto.
 Qed.
@@ -275,13 +278,13 @@ Hypothesis nuF_inv : forall q f,
 Hypothesis muF_mult : forall a q f,
            feq (muF  (fun x y => a * (q x y)) (fmult a f)) (fmult a (muF q f)).
 
-Hypothesis muF_q_monotonic : 
+Hypothesis muF_q_monotonic :
     forall q1 q2 f, (forall x y, q1 x y <= q2 x y) -> fle (muF q1 f) (muF q2 f).
 
-Hypothesis F_muF_eq_one : 
+Hypothesis F_muF_eq_one :
     forall f x, (forall y, le_distr (f y) (Mfix F F_mon y)) -> mu (F f x) (f_one B) == muF (fun (x:A) => f_one B) (fun y => mu (f y) (f_one B)) x.
 
-Hypothesis F_nuF_eq_one : 
+Hypothesis F_nuF_eq_one :
     forall f x, (forall y, le_distr (f y) (Mfix F F_mon y)) -> lib (F f x) (f_one B) == nuF (fun (x:A) => f_one B) (fun y => lib (f y) (f_one B)) x.
 
 Hypothesis muF_cont :  Fcontlub (muF (fun (x:A) => f_one B)).
@@ -290,11 +293,11 @@ Section InvariantTerm.
 
 Variable q : A -> B -> U.
 
-Hypothesis F_nuF_eq : 
+Hypothesis F_nuF_eq :
     forall f x, lib (F f x) (q x) == nuF q (fun y => lib (f y) (q y)) x.
 
-Lemma muF_pterm_le_inv : 
-          forall f, fle f (muF q f) 
+Lemma muF_pterm_le_inv :
+          forall f, fle f (muF q f)
           -> fle f (pterm F F_mon) -> forall x, f x <= mu (Mfix F F_mon x) (q x).
 intros; apply (muF_pterm_le (nuF:=nuF q)); intros; auto.
 rewrite (nuF_q_eq_stable q (fun (x: A) (y: B) => q x y + 0)); auto.
@@ -309,9 +312,9 @@ Qed.
 
 End InvariantTerm.
 
-Lemma muF_pterm_le_mult : 
+Lemma muF_pterm_le_mult :
           forall a f,  fle f (muF (fun (x:A) (y:B) => 1) f) ->
-          (forall f x, lib (F f x) (fun _: B => a * 1) == 
+          (forall f x, lib (F f x) (fun _: B => a * 1) ==
                          nuF (fun (x:A) (y:B) => a * 1) (fun y => lib (f y) (fun _: B => a * 1)) x)
           -> ~ 0==a -> fle (fmult a f) (pterm F F_mon) -> fle f (pterm F F_mon).
 red; intros a f H nuF_eq_a H0 H1 x; apply Umult_le_simpl_left with a; trivial.
@@ -320,10 +323,10 @@ apply muF_pterm_le_inv with (q:=fun (x:A) (y:B) => a * 1) (f:=fmult a f) (x:=x);
 rewrite (muF_mult a (fun (x:A) (y:B) => 1) f); auto.
 Qed.
 
-Lemma muF_pterm_le_inv_mult : 
+Lemma muF_pterm_le_inv_mult :
           forall q a f, fle f (muF q f) ->
           (forall f x, lib (F f x) (q x) == nuF q (fun y => lib (f y) (q y)) x) ->
-          (forall f x, lib (F f x) (fun _: B => a * 1) == 
+          (forall f x, lib (F f x) (fun _: B => a * 1) ==
                          nuF (fun (x:A) (y:B) => a * 1) (fun y => lib (f y) (fun _: B => a * 1)) x) ->
           ~ 0==a ->
           fle (fmult a f) (pterm F F_mon) -> forall x, f x <= mu (Mfix F F_mon x) (q x).
@@ -380,7 +383,7 @@ Hypothesis term_next : forall x, 1<= nu (next x) (f_one A).
 (** *** First result *)
 (** The distribution (next x) always gives values such that (R x y) **)
 Section Result1.
-Hypothesis support_next : 
+Hypothesis support_next :
    forall x f g, (forall y, R y x -> f y <= g y) -> nu (next x) f <= nu (next x) g.
 
 Lemma acc_next_term : forall x,  Acc R x -> 1 <= acc x.
@@ -399,7 +402,7 @@ End Result1.
 (** The probability (next x) gives values such that (R x y) is greater than 1 **)
 
 Hypothesis Rdec : forall x, dec (fun y => R y x).
-Lemma acc_almost_term : 
+Lemma acc_almost_term :
    forall x, Acc R x -> (forall x, 1 <= nu (next x) (carac (Rdec x))) -> 1 <= acc x.
 intros; apply acc_next_term; intros; auto.
 setoid_replace (nu (next x0) f) with (nu (next x0) (fesp (carac (Rdec x0)) f)).
@@ -410,7 +413,7 @@ apply (Ndistr_eq_esp (next x0)); auto.
 apply (Ndistr_eq_esp (next x0)); auto.
 Qed.
 
-Lemma wf_almost_term : 
+Lemma wf_almost_term :
    (well_founded R) -> (forall x, 1 <= nu (next x) (carac (Rdec x))) -> forall x, 1 <= acc x.
 intros; apply acc_almost_term; auto.
 Qed.
