@@ -71,7 +71,7 @@ Axiom Ule_antisym : forall x y:U, x <= y -> y <= x -> x == y.
 Axiom Ule_class : forall x y : U, class (x <= y).
 
 Axiom Ule_total : forall x y : U, orc (x<=y) (y<=x).
-Implicit Arguments Ule_total [].
+Arguments Ule_total : clear implicits.
 
 (** The relation $x\leq y$ is compatible with operators *)
 Axiom Uplus_le_compat_left : forall x y z:U, x <= y -> x + z <= y + z.

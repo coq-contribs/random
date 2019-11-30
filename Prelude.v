@@ -67,7 +67,7 @@ apply H; red; intro.
 apply H3; apply H4; auto.
 Qed.
 
-Implicit Arguments class_orc [].
+Arguments class_orc : clear implicits.
 
 Lemma orc_intro : forall A B, ( ~A -> ~B -> False) -> orc A B.
 intros; apply class_orc; red; intros.

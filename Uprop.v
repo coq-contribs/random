@@ -1,6 +1,5 @@
 (** * Uprop.v : Properties of operators on [[0,1]] *)
 Set Implicit Arguments.
-Unset Standard Proposition Elimination Names.
 Require Export Arith.
 Require Export Omega.
 Require Export Ubase.
@@ -36,12 +35,12 @@ Hint Immediate Ueq_double_neg.
 Lemma Ule_orc : forall x y, orc (x<=y) (~ x<=y).
 auto.
 Qed.
-Implicit Arguments Ule_orc [].
+Arguments Ule_orc : clear implicits.
 
 Lemma Ueq_orc : forall x y, orc (x==y) (~ x==y).
 auto.
 Qed.
-Implicit Arguments Ueq_orc [].
+Arguments Ueq_orc : clear implicits.
 
 Lemma Ule_0_1 : 0 <= 1.
 auto.
@@ -2083,9 +2082,9 @@ Definition fglb (A:Type) (fn:nat->A->U) (x : A) : U := glb (fun n => fn n x).
 Definition increase (A:Type)(fn : nat -> A -> U) := forall n, fle (fn n) (fn (S n)).
 Definition decrease (A:Type)(fn : nat -> A -> U) := forall n, fle (fn (S n)) (fn n).
 
-Implicit Arguments f_one [].
-Implicit Arguments f_zero [].
-Implicit Arguments f_cte [].
+Arguments f_one : clear implicits.
+Arguments f_zero : clear implicits.
+Arguments f_cte : clear implicits.
 
 (** *** Elementary properties *)
 
@@ -2332,8 +2331,8 @@ Hypothesis muFcont : forall (fn : nat -> A -> U), increase fn ->
 Hypothesis nuFcont : forall (fn : nat -> A -> U), decrease fn -> 
            fle (fglb (fun n => F (fn n))) (F (fglb fn)).
 
-Implicit Arguments muFcont [].
-Implicit Arguments nuFcont [].
+Arguments muFcont : clear implicits.
+Arguments nuFcont : clear implicits.
 
 Lemma incr_muiter : increase muiter.
 red; intros; induction n; red; simpl; intros; auto.

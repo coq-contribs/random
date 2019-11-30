@@ -21,7 +21,7 @@ let rec bernoulli x = if flip then
         if x < 1/2 then false else bernoulli (2 p - 1)
         else if x < 1/2 then bernoulli (2 p) else true
 >>*)
-Hypothesis dec_demi : forall x : U, {x < [1/2]}+{[1/2] <= x}. 
+Local Axiom dec_demi : forall x : U, {x < [1/2]}+{[1/2] <= x}. 
 
 Definition Fbern (f: U -> distr bool) (p:U) := 
     Mif Flip 

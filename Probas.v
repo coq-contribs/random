@@ -32,7 +32,7 @@ Lemma mu_stable_eq : forall (A : Type)(m: distr A), stable_eq (mu m).
 intros; apply monotonic_stable_eq; auto.
 Qed.
 Hint Resolve mu_stable_eq.
-Implicit Arguments mu_stable_eq [A].
+Arguments mu_stable_eq [A].
 
 Lemma mu_zero : forall (A : Type)(m: distr A), mu m (f_zero A) == 0.
 intros.
@@ -447,7 +447,7 @@ unfold fnth at 1.
 apply Ule_trans with ([1-] (sigma (fnth n) n)); auto with arith.
 Qed.
 
-Implicit Arguments fnth_retract [].
+Arguments fnth_retract : clear implicits.
 
 (** *** Distribution for [random n]
 The distribution associated to [random n] is 

@@ -20,7 +20,7 @@ let rec iter x = if flip() then iter (x+1) else x
 >>*)
 Import ZArith.
 
-Definition Fiter (f: Z -> (distr Z)) (x:Z) := Mif Flip (f (Zsucc x)) (Munit x).
+Definition Fiter (f: Z -> (distr Z)) (x:Z) := Mif Flip (f (Z.succ x)) (Munit x).
 
 Lemma Fiter_mon : forall f g : Z -> distr Z, 
   (forall n, le_distr (f n) (g n)) -> forall n, le_distr (Fiter f n) (Fiter g n).
@@ -78,7 +78,7 @@ apply fixrule with (p:= fun (x:Z) => p); auto; intros.
 red; simpl; intros.
 unfold Fiter.
 red.
-setoid_rewrite (Mif_eq Flip (f (Zsucc x)) (Munit x) (q1 x)); simpl.
+setoid_rewrite (Mif_eq Flip (f (Z.succ x)) (Munit x) (q1 x)); simpl.
 unfold unit; simpl.
 setoid_rewrite flip_ctrue.
 setoid_rewrite flip_cfalse.
@@ -87,7 +87,7 @@ setoid_rewrite (Umult_one_left [1/2]).
 apply Uplus_le_compat_left.
 apply Ule_trans with (p i * [1/2]); auto.
 apply Umult_le_compat_left; auto.
-apply (H (Zsucc x)%Z).
+apply (H (Z.succ x)%Z).
 Qed.
 
 End IterFlip.

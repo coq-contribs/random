@@ -1,7 +1,6 @@
 Global Set Asymmetric Patterns.
 Set Implicit Arguments.
 Set Strict Implicit.
-Unset Standard Proposition Elimination Names.
 Require Export Setoid.
 Require Import Omega.
 
@@ -24,8 +23,8 @@ Definition rem (a:A) (P:set) :set := fun (x:A) => x<>a /\ (P x).
 (** ** Equivalence *)
 Definition equiv (P Q:set) := forall (x:A), P x <-> Q x.
 
-Implicit Arguments full [].
-Implicit Arguments empty [].
+Arguments full : clear implicits.
+Arguments empty : clear implicits.
 
 Lemma equiv_refl : forall P:set, equiv P P.
 unfold equiv; intuition.
@@ -636,5 +635,5 @@ Hint Constructors finite.
 Hint Resolve add_in add_in_eq add_intro add_incl add_incl_intro union_sym union_empty_left union_empty_right
 union_add_left union_add_right finite_union equiv_union_left 
 equiv_union_right.
-Implicit Arguments full [].
-Implicit Arguments empty [].
+Arguments full : clear implicits.
+Arguments empty : clear implicits.
